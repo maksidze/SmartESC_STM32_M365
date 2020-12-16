@@ -100,6 +100,8 @@ void Error_Handler(void);
 #define LIGHT_GPIO_Port GPIOA
 #define HALL_A_Pin GPIO_PIN_4
 #define HALL_A_GPIO_Port GPIOB
+#define HALL_B_Pin GPIO_PIN_5
+#define HALL_B_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

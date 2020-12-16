@@ -26,6 +26,7 @@
 #include "defines.h"
 #include "config.h"
 #include "util.h"
+#include "main.h"
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
@@ -39,9 +40,11 @@ extern DW   rtDW_Left;                  /* Observable states */
 extern ExtU rtU_Left;                   /* External inputs */
 extern ExtY rtY_Left;                   /* External outputs */
 
+#if KX
 extern DW   rtDW_Right;                 /* Observable states */
 extern ExtU rtU_Right;                  /* External inputs */
 extern ExtY rtY_Right;                  /* External outputs */
+#endif
 // ###############################################################################
 
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
@@ -122,11 +125,13 @@ void DMA1_Channel1_IRQHandler(void) {
     LEFT_TIM->BDTR |= TIM_BDTR_MOE;
   }
 
+#if KX
   if(ABS(curR_DC)  > curDC_max || enable == 0) {
     RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
   } else {
     RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
   }
+#endif
 
   // Create square wave for buzzer
   buzzerTimer++;
@@ -148,7 +153,10 @@ void DMA1_Channel1_IRQHandler(void) {
   // ############################### MOTOR CONTROL ###############################
 
   int ul, vl, wl;
+#if KX
   int ur, vr, wr;
+#endif
+
   static boolean_T OverrunFlag = false;
 
   /* Check for overrun */
@@ -158,21 +166,35 @@ void DMA1_Channel1_IRQHandler(void) {
   OverrunFlag = true;
 
   /* Make sure to stop BOTH motors in case of an error */
-  enableFin = enable && !rtY_Left.z_errCode && !rtY_Right.z_errCode;
+  enableFin = enable && !rtY_Left.z_errCode
+#if KX
+		  && !rtY_Right.z_errCode
+#endif
+		  ;
  
   // ========================= LEFT MOTOR ============================ 
     // Get hall sensors values
+#if KX
     uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
     uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
     uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
+#endif
 
     /* Set motor inputs here */
     rtU_Left.b_motEna     = enableFin;
     rtU_Left.z_ctrlModReq = ctrlModReq;  
     rtU_Left.r_inpTgt     = pwml;
+
+    rtU_Left.b_hallA      = !(HALL_A_GPIO_Port->IDR & HALL_A_Pin);
+    rtU_Left.b_hallB      = !(HALL_B_GPIO_Port->IDR & HALL_B_Pin);
+    rtU_Left.b_hallC      = !(HALL_C_GPIO_Port->IDR & HALL_C_Pin);
+
+#if KX
     rtU_Left.b_hallA      = hall_ul;
     rtU_Left.b_hallB      = hall_vl;
     rtU_Left.b_hallC      = hall_wl;
+#endif
+
     rtU_Left.i_phaAB      = curL_phaA;
     rtU_Left.i_phaBC      = curL_phaB;
     rtU_Left.i_DCLink     = curL_DC;
@@ -199,6 +221,7 @@ void DMA1_Channel1_IRQHandler(void) {
   
 
   // ========================= RIGHT MOTOR ===========================  
+#if KX
     // Get hall sensors values
     uint8_t hall_ur = !(RIGHT_HALL_U_PORT->IDR & RIGHT_HALL_U_PIN);
     uint8_t hall_vr = !(RIGHT_HALL_V_PORT->IDR & RIGHT_HALL_V_PIN);
@@ -229,10 +252,12 @@ void DMA1_Channel1_IRQHandler(void) {
  // motSpeedRight = rtY_Right.n_mot;
  // motAngleRight = rtY_Right.a_elecAngle;
 
+
     /* Apply commands */
     RIGHT_TIM->RIGHT_TIM_U  = (uint16_t)CLAMP(ur + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     RIGHT_TIM->RIGHT_TIM_V  = (uint16_t)CLAMP(vr + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     RIGHT_TIM->RIGHT_TIM_W  = (uint16_t)CLAMP(wr + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
+#endif
   // =================================================================
 
   /* Indicate task complete */
