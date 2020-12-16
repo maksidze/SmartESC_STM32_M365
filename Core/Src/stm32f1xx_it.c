@@ -1,68 +1,81 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    stm32f1xx_it.c
   * @brief   Interrupt Service Routines.
   ******************************************************************************
+  * @attention
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
-#include "stm32f1xx.h"
+#include "main.h"
 #include "stm32f1xx_it.h"
-#include "defines.h"
-#include "config.h"
-#include "util.h"
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+/* USER CODE END Includes */
 
-extern DMA_HandleTypeDef hdma_i2c2_rx;
-extern DMA_HandleTypeDef hdma_i2c2_tx;
-extern I2C_HandleTypeDef hi2c2;
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN TD */
 
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
-extern DMA_HandleTypeDef hdma_usart3_rx;
-extern DMA_HandleTypeDef hdma_usart3_tx;
+/* USER CODE END TD */
 
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern DMA_HandleTypeDef hdma_usart3_rx;
+extern DMA_HandleTypeDef hdma_usart3_tx;
+extern UART_HandleTypeDef huart3;
+extern TIM_HandleTypeDef htim4;
 
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
 
 /******************************************************************************/
-/*            Cortex-M3 Processor Interruption and Exception Handlers         */
+/*           Cortex-M3 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
-
 /**
-* @brief This function handles Non maskable interrupt.
-*/
-void NMI_Handler(void) {
+  * @brief This function handles Non maskable interrupt.
+  */
+void NMI_Handler(void)
+{
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
@@ -72,65 +85,70 @@ void NMI_Handler(void) {
 }
 
 /**
-* @brief This function handles Hard fault interrupt.
-*/
-void HardFault_Handler(void) {
+  * @brief This function handles Hard fault interrupt.
+  */
+void HardFault_Handler(void)
+{
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
   /* USER CODE END HardFault_IRQn 0 */
-  while(1) {
+  while (1)
+  {
+    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+    /* USER CODE END W1_HardFault_IRQn 0 */
   }
-  /* USER CODE BEGIN HardFault_IRQn 1 */
-
-  /* USER CODE END HardFault_IRQn 1 */
 }
 
 /**
-* @brief This function handles Memory management fault.
-*/
-void MemManage_Handler(void) {
+  * @brief This function handles Memory management fault.
+  */
+void MemManage_Handler(void)
+{
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 
   /* USER CODE END MemoryManagement_IRQn 0 */
-  while(1) {
+  while (1)
+  {
+    /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+    /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
-  /* USER CODE BEGIN MemoryManagement_IRQn 1 */
-
-  /* USER CODE END MemoryManagement_IRQn 1 */
 }
 
 /**
-* @brief This function handles Prefetch fault, memory access fault.
-*/
-void BusFault_Handler(void) {
+  * @brief This function handles Prefetch fault, memory access fault.
+  */
+void BusFault_Handler(void)
+{
   /* USER CODE BEGIN BusFault_IRQn 0 */
 
   /* USER CODE END BusFault_IRQn 0 */
-  while(1) {
+  while (1)
+  {
+    /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+    /* USER CODE END W1_BusFault_IRQn 0 */
   }
-  /* USER CODE BEGIN BusFault_IRQn 1 */
-
-  /* USER CODE END BusFault_IRQn 1 */
 }
 
 /**
-* @brief This function handles Undefined instruction or illegal state.
-*/
-void UsageFault_Handler(void) {
+  * @brief This function handles Undefined instruction or illegal state.
+  */
+void UsageFault_Handler(void)
+{
   /* USER CODE BEGIN UsageFault_IRQn 0 */
 
   /* USER CODE END UsageFault_IRQn 0 */
-  while(1) {
+  while (1)
+  {
+    /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+    /* USER CODE END W1_UsageFault_IRQn 0 */
   }
-  /* USER CODE BEGIN UsageFault_IRQn 1 */
-
-  /* USER CODE END UsageFault_IRQn 1 */
 }
 
 /**
-* @brief This function handles System service call via SWI instruction.
-*/
-void SVC_Handler(void) {
+  * @brief This function handles System service call via SWI instruction.
+  */
+void SVC_Handler(void)
+{
   /* USER CODE BEGIN SVCall_IRQn 0 */
 
   /* USER CODE END SVCall_IRQn 0 */
@@ -140,9 +158,10 @@ void SVC_Handler(void) {
 }
 
 /**
-* @brief This function handles Debug monitor.
-*/
-void DebugMon_Handler(void) {
+  * @brief This function handles Debug monitor.
+  */
+void DebugMon_Handler(void)
+{
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
   /* USER CODE END DebugMonitor_IRQn 0 */
@@ -152,9 +171,10 @@ void DebugMon_Handler(void) {
 }
 
 /**
-* @brief This function handles Pendable request for system service.
-*/
-void PendSV_Handler(void) {
+  * @brief This function handles Pendable request for system service.
+  */
+void PendSV_Handler(void)
+{
   /* USER CODE BEGIN PendSV_IRQn 0 */
 
   /* USER CODE END PendSV_IRQn 0 */
@@ -164,146 +184,26 @@ void PendSV_Handler(void) {
 }
 
 /**
-* @brief This function handles System tick timer.
-*/
-#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-void PPM_SysTick_Callback(void);
-#endif
-
-#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-void PWM_SysTick_Callback(void);
-#endif
-
-void SysTick_Handler(void) {
+  * @brief This function handles System tick timer.
+  */
+void SysTick_Handler(void)
+{
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
-#if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-  PPM_SysTick_Callback();
-#endif
 
-#if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-  PWM_SysTick_Callback();
-#endif
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
   /* USER CODE END SysTick_IRQn 1 */
 }
 
-#ifdef CONTROL_NUNCHUK
-extern I2C_HandleTypeDef hi2c2;
-void I2C1_EV_IRQHandler(void)
-{
-  HAL_I2C_EV_IRQHandler(&hi2c2);
-}
+/******************************************************************************/
+/* STM32F1xx Peripheral Interrupt Handlers                                    */
+/* Add here the Interrupt Handlers for the used peripherals.                  */
+/* For the available peripheral interrupt handler names,                      */
+/* please refer to the startup file (startup_stm32f1xx.s).                    */
+/******************************************************************************/
 
-void I2C1_ER_IRQHandler(void)
-{
-  HAL_I2C_ER_IRQHandler(&hi2c2);
-}
-
-/**
-* @brief This function handles DMA1 channel4 global interrupt.
-*/
-void DMA1_Channel4_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_i2c2_tx);
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 1 */
-}
-
-/**
-* @brief This function handles DMA1 channel5 global interrupt.
-*/
-void DMA1_Channel5_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_i2c2_rx);
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel5_IRQn 1 */
-}
-#endif
-
-#ifdef CONTROL_PPM_LEFT
-void EXTI3_IRQHandler(void)
-{
-  __HAL_GPIO_EXTI_CLEAR_IT(PPM_PIN);
-  PPM_ISR_Callback();    
-}
-#endif
-#ifdef CONTROL_PPM_RIGHT
-void EXTI15_10_IRQHandler(void)
-{
-  if(__HAL_GPIO_EXTI_GET_IT(PPM_PIN) != RESET) {
-    __HAL_GPIO_EXTI_CLEAR_IT(PPM_PIN);
-    PPM_ISR_Callback();
-  }
-}
-#endif
-
-#ifdef CONTROL_PWM_LEFT
-void EXTI2_IRQHandler(void)
-{    
-  __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH1);
-  PWM_ISR_CH1_Callback();
-}
-
-void EXTI3_IRQHandler(void)
-{
-  __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH2);
-  PWM_ISR_CH2_Callback();    
-}
-#endif
-#ifdef CONTROL_PWM_RIGHT
-void EXTI15_10_IRQHandler(void)
-{
-  if(__HAL_GPIO_EXTI_GET_IT(PWM_PIN_CH1) != RESET) {
-    __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH1);
-    PWM_ISR_CH1_Callback();
-  }
-  if(__HAL_GPIO_EXTI_GET_IT(PWM_PIN_CH2) != RESET) {
-    __HAL_GPIO_EXTI_CLEAR_IT(PWM_PIN_CH2);
-    PWM_ISR_CH2_Callback();
-  }
-}
-#endif
-
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-void DMA1_Channel6_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_rx);
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 1 */
-}
-
-/**
-* @brief This function handles DMA1 channel5 global interrupt.
-*/
-void DMA1_Channel7_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_tx);
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel5_IRQn 1 */
-}
-#endif
-
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
 /**
   * @brief This function handles DMA1 channel2 global interrupt.
   */
@@ -331,53 +231,49 @@ void DMA1_Channel3_IRQHandler(void)
 
   /* USER CODE END DMA1_Channel3_IRQn 1 */
 }
-#endif
 
-#if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
 /**
-  * @brief This function handles USART2 global interrupt.
+  * @brief This function handles ADC1 and ADC2 global interrupts.
   */
-void USART2_IRQHandler(void)
+void ADC1_2_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART2_IRQn 0 */
+  /* USER CODE BEGIN ADC1_2_IRQn 0 */
 
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
-  if(RESET != __HAL_UART_GET_IT_SOURCE(&huart2, UART_IT_IDLE)) {  // Check for IDLE line interrupt
-      __HAL_UART_CLEAR_IDLEFLAG(&huart2);                         // Clear IDLE line flag (otherwise it will continue to enter interrupt)
-      usart2_rx_check();                                          // Check for data to process
-  }
-  /* USER CODE END USART2_IRQn 1 */
+  /* USER CODE END ADC1_2_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  HAL_ADC_IRQHandler(&hadc2);
+  /* USER CODE BEGIN ADC1_2_IRQn 1 */
+
+  /* USER CODE END ADC1_2_IRQn 1 */
 }
-#endif
 
-#if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
+}
+
 /**
   * @brief This function handles USART3 global interrupt.
   */
 void USART3_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART2_IRQn 0 */
+  /* USER CODE BEGIN USART3_IRQn 0 */
 
-  /* USER CODE END USART2_IRQn 0 */
+  /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
-  /* USER CODE BEGIN USART2_IRQn 1 */
-  if(RESET != __HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_IDLE)) {  // Check for IDLE line interrupt  
-      __HAL_UART_CLEAR_IDLEFLAG(&huart3);                         // Clear IDLE line flag (otherwise it will continue to enter interrupt)
-      usart3_rx_check();                                          // Check for data to process
-  }
-  /* USER CODE END USART2_IRQn 1 */
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
 }
-#endif
-
-/******************************************************************************/
-/* STM32F1xx Peripheral Interrupt Handlers                                    */
-/* Add here the Interrupt Handlers for the used peripherals.                  */
-/* For the available peripheral interrupt handler names,                      */
-/* please refer to the startup file (startup_stm32f1xx.s).                    */
-/******************************************************************************/
-
 
 /* USER CODE BEGIN 1 */
 

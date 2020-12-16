@@ -3,7 +3,6 @@
 #include <string.h>
 #include "stm32f1xx_hal.h"
 #include "defines.h"
-#include "setup.h"
 #include "config.h"
 
 TIM_HandleTypeDef TimHandle;
@@ -15,7 +14,7 @@ uint8_t nunchuk_data[6] = {0};
 
 uint8_t i2cBuffer[2];
 
-extern I2C_HandleTypeDef hi2c2;
+//extern I2C_HandleTypeDef hi2c2;
 extern DMA_HandleTypeDef hdma_i2c2_rx;
 extern DMA_HandleTypeDef hdma_i2c2_tx;
 
@@ -210,6 +209,7 @@ void PWM_Init(void) {
 }
 #endif
 
+/*
 uint8_t Nunchuk_Ping(void) {
   if (HAL_I2C_Master_Receive(&hi2c2,0xA4,(uint8_t*)nunchuk_data, 1, 10) == HAL_OK) {
     return 1;
@@ -252,3 +252,4 @@ void Nunchuk_Read(void) {
   //setScopeChannel(2, (int)nunchuk_data[5] & 1);
   //setScopeChannel(3, ((int)nunchuk_data[5] >> 1) & 1);
 }
+*/

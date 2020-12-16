@@ -22,7 +22,6 @@
 #include <string.h>
 #include "stm32f1xx_hal.h"
 #include "defines.h"
-#include "setup.h"
 #include "config.h"
 #include "comms.h"
 #include "eeprom.h"
@@ -40,7 +39,7 @@
 // Global variables set externally
 //------------------------------------------------------------------------
 extern volatile adc_buf_t adc_buffer;
-extern I2C_HandleTypeDef hi2c2;
+//extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
@@ -262,7 +261,7 @@ void Input_Init(void) {
     UART2_Init();
   #endif
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    UART3_Init();
+    //UART3_Init();
   #endif
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));

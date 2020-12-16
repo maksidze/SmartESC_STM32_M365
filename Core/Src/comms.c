@@ -2,7 +2,6 @@
 #include <string.h>
 #include "stm32f1xx_hal.h"
 #include "defines.h"
-#include "setup.h"
 #include "config.h"
 #include "comms.h"
 

@@ -59,8 +59,8 @@
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
 <booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/M365_custom_firmware.elf"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="M365_custom_firmware"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/hoverboard-firmware-hack-FOC.elf"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="hoverboard-firmware-hack-FOC"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.716811436"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
