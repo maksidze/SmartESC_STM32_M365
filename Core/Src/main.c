@@ -408,6 +408,9 @@ int main(void)
 	        }
 	      #endif
 
+#endif
+#endif
+
 	      // ####### LOW-PASS FILTER #######
 	      rateLimiter16(cmd1, RATE, &steerRateFixdt);
 	      rateLimiter16(cmd2, RATE, &speedRateFixdt);
@@ -604,6 +607,7 @@ int main(void)
 	      }
 	    #endif
 
+#if KX
 	    // ####### POWEROFF BY POWER-BUTTON #######
 	    poweroffPressCheck();
 
