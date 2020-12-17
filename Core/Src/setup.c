@@ -42,7 +42,7 @@ TIM_HandleTypeDef htim_right;
 TIM_HandleTypeDef htim_left;
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
-if KX
+#if KX
 I2C_HandleTypeDef hi2c2;
 #endif
 UART_HandleTypeDef huart2;
