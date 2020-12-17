@@ -264,7 +264,9 @@ int main(void)
 #endif
 
   Input_Lim_Init();   // Input Limitations Init
+#if KX
   Input_Init();       // Input Init
+#endif
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
@@ -653,6 +655,9 @@ int main(void)
 	    lastSpeedR = speedR;
 	    main_loop_counter++;
 	    timeoutCnt++;
+	    
+	    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, (timeoutCnt % 100 > 50));
+	    
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
