@@ -352,6 +352,7 @@ int main(void)
 
 #else
 	    readCommand();                        // Read Command: cmd1, cmd2
+#endif
 
 	    calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
@@ -407,9 +408,6 @@ int main(void)
 	          }
 	        }
 	      #endif
-
-#endif
-#endif
 
 	      // ####### LOW-PASS FILTER #######
 	      rateLimiter16(cmd1, RATE, &steerRateFixdt);
