@@ -1,4 +1,4 @@
-# /\ Modified Version for M365 controller /\
+# /\ Modified version for M365 controller /\
 
 # hoverboard-firmware-hack-FOC
 
