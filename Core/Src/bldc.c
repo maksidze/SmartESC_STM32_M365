@@ -101,10 +101,12 @@ void DMA1_Channel1_IRQHandler(void) {
     offsetcount++;
     offsetrlA = (adc_buffer.rlA + offsetrlA) / 2;
     offsetrlB = (adc_buffer.rlB + offsetrlB) / 2;
+#if KX
     offsetrrB = (adc_buffer.rrB + offsetrrB) / 2;
     offsetrrC = (adc_buffer.rrC + offsetrrC) / 2;
     offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
     offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
+#endif
     return;
   }
 
@@ -116,7 +118,9 @@ void DMA1_Channel1_IRQHandler(void) {
   // Get Left motor currents
   curL_phaA = (int16_t)(offsetrlA - adc_buffer.rlA);
   curL_phaB = (int16_t)(offsetrlB - adc_buffer.rlB);
+#if KX
   curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
+#endif
   
   // Get Right motor currents
 #if KX

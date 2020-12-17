@@ -198,19 +198,36 @@
 #define ARRAY_LEN(x) (uint32_t)(sizeof(x) / sizeof(*(x)))
 #define MAP(x, in_min, in_max, out_min, out_max) (((((x) - (in_min)) * ((out_max) - (out_min))) / ((in_max) - (in_min))) + (out_min))
 
-
+/*
 typedef struct {
-  uint16_t dcr; 
-  uint16_t dcl; 
+	  uint16_t temp;
+  //uint16_t dcr;
+	  uint16_t batt1;
+  //uint16_t dcl;
   uint16_t rlA;
   uint16_t rlB;
-  uint16_t rrB;
-  uint16_t rrC;
-  uint16_t batt1;
-  uint16_t l_tx2;
-  uint16_t temp;
-  uint16_t l_rx2;
+  uint16_t rlC;
+  uint16_t voltPhA;
+  uint16_t voltPhB;
+//  uint16_t rrB;
+//  uint16_t rrC;
+  //uint16_t batt1;
+//  uint16_t l_tx2;
+//  uint16_t l_rx2;
 } adc_buf_t;
+*/
+
+typedef struct {
+  uint16_t rlA;
+  uint16_t rlB;
+  uint16_t rlC;
+  uint16_t voltPhA;
+  uint16_t voltPhB;
+  uint16_t voltPhC;
+  uint16_t temp;
+  uint16_t batt1;
+} adc_buf_t;
+
 
 // Define I2C, Nunchuk, PPM, PWM functions
 #if KX
