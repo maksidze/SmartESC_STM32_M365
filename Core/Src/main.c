@@ -330,13 +330,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#if TEST_LOOP
   while (1)
   {
 
 	    HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
 
+#if TEST_LOOP
 	    if (main_loop_counter % 3000 < 1000)
 	    {
 	    	cmd1++;
@@ -352,7 +352,6 @@ int main(void)
 
 #else
 	    readCommand();                        // Read Command: cmd1, cmd2
-#endif
 
 	    calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
@@ -644,6 +643,7 @@ int main(void)
 	    if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
 	      poweroff();
 	    }
+#endif
 
 	    // HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
 	    // Update main loop states
