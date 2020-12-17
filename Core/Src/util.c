@@ -511,16 +511,21 @@ void adcCalibLim(void) {
 
   readInput();
   // Inititalization: MIN = a high value, MAX = a low value
+#if KX
   int32_t  input1_fixdt = input1 << 16;
   int32_t  input2_fixdt = input2 << 16;
+#endif
   int16_t  INPUT1_MIN_temp = MAX_int16_T;
   int16_t  INPUT1_MID_temp = 0;
   int16_t  INPUT1_MAX_temp = MIN_int16_T;
   int16_t  INPUT2_MIN_temp = MAX_int16_T;
   int16_t  INPUT2_MID_temp = 0;
   int16_t  INPUT2_MAX_temp = MIN_int16_T;
+#if KX
   uint16_t input_cal_timeout = 0;
+#endif
 
+#if KX
   // Extract MIN, MAX and MID from ADC while the power button is not pressed
   while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && input_cal_timeout++ < 4000) {   // 20 sec timeout
     readInput();
@@ -535,6 +540,7 @@ void adcCalibLim(void) {
     INPUT2_MAX_temp = MAX(INPUT2_MAX_temp, INPUT2_MID_temp);
     HAL_Delay(5);
   }
+#endif
 
   INPUT1_TYP_CAL = checkInputType(INPUT1_MIN_temp, INPUT1_MID_temp, INPUT1_MAX_temp);
   if (INPUT1_TYP_CAL == INPUT1_TYPE || INPUT1_TYPE == 3) {  // Accept calibration only if the type is correct OR type was set to 3 (auto)
@@ -579,6 +585,7 @@ void adcCalibLim(void) {
  * - press the power button to confirm or wait for the 10 sec timeout
  */
 void updateCurSpdLim(void) {
+#if KX
   if (speedAvgAbs > 5) {    // do not enter this mode if motors are spinning
     return;
   }
@@ -627,7 +634,8 @@ void updateCurSpdLim(void) {
   setScopeChannel(7, (int16_t)rtP_Left.n_max);
   consoleScope();
 
-  #endif
+#endif
+#endif
 }
 
  /*
@@ -758,6 +766,7 @@ void cruiseControl(uint8_t button) {
 /* =========================== Poweroff Functions =========================== */
 
 void poweroff(void) {
+#if KX
   enable = 0;
   consoleLog("-- Motors disabled --\r\n");
   buzzerCount = 0;  // prevent interraction with beep counter
@@ -768,11 +777,13 @@ void poweroff(void) {
   }
   saveConfig();
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
+#endif
   while(1) {}
 }
 
 
 void poweroffPressCheck(void) {
+#if KX
 	#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       enable = 0;
@@ -825,6 +836,7 @@ void poweroffPressCheck(void) {
       poweroff();                                             // release power-latch
     }
   #endif
+#endif
 }
 
 

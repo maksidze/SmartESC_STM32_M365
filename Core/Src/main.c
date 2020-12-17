@@ -256,15 +256,20 @@ int main(void)
 
   BLDC_Init();        // BLDC Controller Init
 
+#if KX
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
+#endif
+
   Input_Lim_Init();   // Input Limitations Init
   Input_Init();       // Input Init
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
 
+#if KX
   poweronMelody();
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
+#endif
 
   int16_t speedL     = 0, speedR     = 0;
   int16_t lastSpeedL = 0, lastSpeedR = 0;

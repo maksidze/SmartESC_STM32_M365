@@ -47,7 +47,11 @@ extern ExtY rtY_Right;                  /* External outputs */
 #endif
 // ###############################################################################
 
+#if KX
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
+#else
+static int16_t pwm_margin = 10;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
+#endif
 
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
@@ -63,8 +67,10 @@ uint8_t buzzerFreq          = 0;
 uint8_t buzzerPattern       = 0;
 uint8_t buzzerCount         = 0;
 static uint32_t buzzerTimer = 0;
+#if KX
 static uint8_t  buzzerPrev  = 0;
 static uint8_t  buzzerIdx   = 0;
+#endif
 
 uint8_t        enable       = 0;        // initially motors are disabled for SAFETY
 static uint8_t enableFin    = 0;
@@ -135,6 +141,7 @@ void DMA1_Channel1_IRQHandler(void) {
   }
 #endif
 
+#if KX
   // Create square wave for buzzer
   buzzerTimer++;
   if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
@@ -151,6 +158,7 @@ void DMA1_Channel1_IRQHandler(void) {
       HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
       buzzerPrev = 0;
   }
+#endif
 
   // ############################### MOTOR CONTROL ###############################
 
@@ -176,27 +184,17 @@ void DMA1_Channel1_IRQHandler(void) {
  
   // ========================= LEFT MOTOR ============================ 
     // Get hall sensors values
-#if KX
     uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
     uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
     uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
-#endif
 
     /* Set motor inputs here */
     rtU_Left.b_motEna     = enableFin;
     rtU_Left.z_ctrlModReq = ctrlModReq;  
     rtU_Left.r_inpTgt     = pwml;
-
-    rtU_Left.b_hallA      = !(HALL_A_GPIO_Port->IDR & HALL_A_Pin);
-    rtU_Left.b_hallB      = !(HALL_B_GPIO_Port->IDR & HALL_B_Pin);
-    rtU_Left.b_hallC      = !(HALL_C_GPIO_Port->IDR & HALL_C_Pin);
-
-#if KX
     rtU_Left.b_hallA      = hall_ul;
     rtU_Left.b_hallB      = hall_vl;
     rtU_Left.b_hallC      = hall_wl;
-#endif
-
     rtU_Left.i_phaAB      = curL_phaA;
     rtU_Left.i_phaBC      = curL_phaB;
     rtU_Left.i_DCLink     = curL_DC;
@@ -216,9 +214,20 @@ void DMA1_Channel1_IRQHandler(void) {
   // motAngleLeft = rtY_Left.a_elecAngle;
 
     /* Apply commands */
+#if KX
+/*
+    // Xiaomi firmware
+    htim1.Instance->CCR1 = CLAMP(ul + pwm_res / 2, 10, pwm_res-10);
+    htim1.Instance->CCR2 = CLAMP(vl + pwm_res / 2, 10, pwm_res-10);
+    htim1.Instance->CCR3 = CLAMP(wl + pwm_res / 2, 10, pwm_res-10);
+    */
+#else
+    // Hoverboard firmware
     LEFT_TIM->LEFT_TIM_U    = (uint16_t)CLAMP(ul + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     LEFT_TIM->LEFT_TIM_V    = (uint16_t)CLAMP(vl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     LEFT_TIM->LEFT_TIM_W    = (uint16_t)CLAMP(wl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
+#endif
+
   // =================================================================
   
 
@@ -253,7 +262,6 @@ void DMA1_Channel1_IRQHandler(void) {
  // errCodeRight  = rtY_Right.z_errCode;
  // motSpeedRight = rtY_Right.n_mot;
  // motAngleRight = rtY_Right.a_elecAngle;
-
 
     /* Apply commands */
     RIGHT_TIM->RIGHT_TIM_U  = (uint16_t)CLAMP(ur + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);

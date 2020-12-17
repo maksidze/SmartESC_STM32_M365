@@ -5,7 +5,7 @@
 <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.launch.enable_swv" value="false"/>
 <intAttribute key="com.st.stm32cube.ide.mcu.debug.launch.formatVersion" value="2"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.ip_address_local" value="localhost"/>
-<stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.loadList" value="{&quot;fItems&quot;:[{&quot;fIsFromMainTab&quot;:true,&quot;fPath&quot;:&quot;Release\\M365_custom_firmware.elf&quot;,&quot;fProjectName&quot;:&quot;M365_custom_firmware&quot;,&quot;fPerformBuild&quot;:true,&quot;fDownload&quot;:true,&quot;fLoadSymbols&quot;:true}]}"/>
+<stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.loadList" value="{&quot;fItems&quot;:[{&quot;fIsFromMainTab&quot;:true,&quot;fPath&quot;:&quot;Release\\hoverboard-firmware-hack-FOC.elf&quot;,&quot;fProjectName&quot;:&quot;hoverboard-firmware-hack-FOC&quot;,&quot;fPerformBuild&quot;:true,&quot;fDownload&quot;:true,&quot;fLoadSymbols&quot;:true}]}"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.override_start_address_mode" value="default"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.launch.remoteCommand" value="target remote"/>
 <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.launch.startServer" value="true"/>
@@ -49,7 +49,7 @@
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.runCommands" value=""/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setPcRegister" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setResume" value="true"/>
-<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setStopAt" value="true"/>
+<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setStopAt" value="false"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.stopAt" value="main"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="arm-none-eabi-gdb"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.NON_STOP" value="true"/>
@@ -57,17 +57,20 @@
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
-<booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
+<booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="false"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Release\hoverboard-firmware-hack-FOC.elf"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="hoverboard-firmware-hack-FOC"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.328915886"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1374869306"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/M365_custom_firmware"/>
+<listEntry value="/hoverboard-firmware-hack-FOC"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+<listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;/&gt;&#13;&#10;"/>
 <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
