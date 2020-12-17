@@ -53,7 +53,7 @@
 #endif
 
 #if KX
-#define LEFT_TIM TIM1
+#define LEFT_TIM TIM8
 #define LEFT_TIM_U CCR1
 #define LEFT_TIM_UH_PIN GPIO_PIN_6
 #define LEFT_TIM_UH_PORT GPIOC
