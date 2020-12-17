@@ -113,9 +113,11 @@ void DMA1_Channel1_IRQHandler(void) {
   curL_DC   = (int16_t)(offsetdcl - adc_buffer.dcl);
   
   // Get Right motor currents
+#if KX
   curR_phaB = (int16_t)(offsetrrB - adc_buffer.rrB);
   curR_phaC = (int16_t)(offsetrrC - adc_buffer.rrC);
   curR_DC   = (int16_t)(offsetdcr - adc_buffer.dcr);
+#endif
 
   // Disable PWM when current limit is reached (current chopping)
   // This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
