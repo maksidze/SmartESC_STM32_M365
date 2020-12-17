@@ -30,6 +30,9 @@
 #include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
+
+#define TEST_LOOP 1
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -282,12 +285,30 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#if TEST_LOOP
   while (1)
   {
 
 	    HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
+
+	    if (main_loop_counter % 3000 < 1000)
+	    {
+	    	cmd1++;
+	    }
+	    else if (main_loop_counter % 3000 < 2000)
+	    {
+
+	    }
+	    else
+	    {
+	    	cmd1--;
+	    }
+
+#else
 	    readCommand();                        // Read Command: cmd1, cmd2
+#endif
+
 	    calcAvgSpeed();                       // Calculate average measured speed: speedAvg, speedAvgAbs
 
 	    #ifndef VARIANT_TRANSPOTTER
