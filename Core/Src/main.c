@@ -281,6 +281,51 @@ int main(void)
   int16_t board_temp_adcFilt  = adc_buffer.temp;
   int16_t board_temp_deg_c;
 
+
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////   DIRTY       /////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
+
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+
+  htim1.Instance->RCR = 1;
+
+  __HAL_TIM_ENABLE(&htim1);
+
+
+  htim3.Instance->RCR = 1;
+
+  __HAL_TIM_ENABLE(&htim3);
+
+  hadc1.Instance->CR2 |= ADC_CR2_DMA | ADC_CR2_TSVREFE;
+  __HAL_ADC_ENABLE(&hadc1);
+
+  hadc2.Instance->CR2 |= ADC_CR2_DMA;
+  __HAL_ADC_ENABLE(&hadc2);
+
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  DMA1_Channel1->CCR   = 0;
+  DMA1_Channel1->CNDTR = 4;
+  DMA1_Channel1->CPAR  = (uint32_t) & (ADC1->DR);
+  DMA1_Channel1->CMAR  = (uint32_t)&adc_buffer;
+  DMA1_Channel1->CCR   = DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1 | DMA_CCR_MINC | DMA_CCR_CIRC | DMA_CCR_TCIE;
+  DMA1_Channel1->CCR |= DMA_CCR_EN;
+
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 10, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+//////////////////////////////////////////////////////////////////////////////
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
