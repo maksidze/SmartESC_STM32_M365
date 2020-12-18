@@ -23,6 +23,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "util.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -231,6 +232,13 @@ void DMA1_Channel3_IRQHandler(void)
   HAL_DMA_IRQHandler(&hdma_usart3_rx);
   /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
 
+/*
+  if(RESET != __HAL_DMA_GET_IT_SOURCE(&hdma_usart3_rx, UART_IT_IDLE)) {  // Check for IDLE line interrupt
+      __HAL_UART_CLEAR_IDLEFLAG(&huart3);                         // Clear IDLE line flag (otherwise it will continue to enter interrupt)
+      usart3_rx_check();                                          // Check for data to process
+  }
+*/
+
   /* USER CODE END DMA1_Channel3_IRQn 1 */
 }
 
@@ -301,6 +309,11 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART3_IRQn 1 */
+
+  if(RESET != __HAL_UART_GET_IT_SOURCE(&huart3, UART_IT_IDLE)) {  // Check for IDLE line interrupt
+      __HAL_UART_CLEAR_IDLEFLAG(&huart3);                         // Clear IDLE line flag (otherwise it will continue to enter interrupt)
+      usart3_rx_check();                                          // Check for data to process
+  }
 
   /* USER CODE END USART3_IRQn 1 */
 }

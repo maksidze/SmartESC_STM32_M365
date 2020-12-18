@@ -430,6 +430,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
   /* USER CODE BEGIN USART1_MspInit 1 */
 
+    __HAL_UART_ENABLE_IT (huart, UART_IT_IDLE);  // Enable the USART IDLE line detection interrupt
+
   /* USER CODE END USART1_MspInit 1 */
   }
   else if(huart->Instance==USART3)
@@ -492,6 +494,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     HAL_NVIC_SetPriority(USART3_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART3_IRQn);
   /* USER CODE BEGIN USART3_MspInit 1 */
+
+	__HAL_UART_ENABLE_IT (huart, UART_IT_IDLE);  // Enable the USART IDLE line detection interrupt
 
   /* USER CODE END USART3_MspInit 1 */
   }

@@ -28,6 +28,7 @@
 #include "util.h"
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
+#include "setup.h"
 
 #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
 #include "hd44780.h"
@@ -261,7 +262,7 @@ void Input_Init(void) {
     UART2_Init();
   #endif
   #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
-    //UART3_Init();
+    UART3_Init();
   #endif
   #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
     HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
@@ -272,6 +273,7 @@ void Input_Init(void) {
     UART_DisableRxErrors(&huart3);
   #endif
 
+#if KX
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
     uint16_t writeCheck, i_max, n_max;
     HAL_FLASH_Unlock();
@@ -298,6 +300,7 @@ void Input_Init(void) {
     }
     HAL_FLASH_Lock();
   #endif
+#endif
 
   #ifdef VARIANT_TRANSPOTTER
     enable = 1;
@@ -938,14 +941,19 @@ void readCommand(void) {
       timeoutFlagSerial = timeoutFlagSerial_L || timeoutFlagSerial_R;
     #endif
 
-    #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-      cmd1 = addDeadBand(input1, INPUT1_TYP_CAL, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
-      #if !defined(VARIANT_SKATEBOARD)
-        cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
-      #else      
-        cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_BRAKE, INPUT_MAX);
-      #endif
-    #endif
+#if KX
+#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
+  cmd1 = addDeadBand(input1, INPUT1_TYP_CAL, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
+  #if !defined(VARIANT_SKATEBOARD)
+    cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
+  #else
+    cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_BRAKE, INPUT_MAX);
+  #endif
+#endif
+#else
+      cmd1 = input1;
+      cmd2 = input2;
+#endif
 
     #ifdef VARIANT_TRANSPOTTER
       #ifdef GAMETRAK_CONNECTION_NORMAL

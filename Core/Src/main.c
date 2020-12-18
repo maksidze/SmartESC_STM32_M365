@@ -31,7 +31,7 @@
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 
-#define TEST_LOOP 1
+#define TEST_LOOP 0
 
 /* USER CODE END Includes */
 
@@ -264,9 +264,7 @@ int main(void)
 #endif
 
   Input_Lim_Init();   // Input Limitations Init
-#if KX
   Input_Init();       // Input Init
-#endif
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_Start(&hadc2);
@@ -339,11 +337,14 @@ int main(void)
 
 
 #if TEST_LOOP
-	    if (main_loop_counter % 6000 < 2000)
+
+		#define LOOP_INC	    3000
+
+	    if (main_loop_counter % LOOP_INC < LOOP_INC / 3)
 	    {
 	    	cmd1++;
 	    }
-	    else if (main_loop_counter % 6000 < 4000)
+	    else if (main_loop_counter % LOOP_INC < LOOP_INC * 2 / 3)
 	    {
 
 	    }
@@ -656,7 +657,7 @@ int main(void)
 	    main_loop_counter++;
 	    timeoutCnt++;
 	    
-	    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, (timeoutCnt % 100 > 50));
+	    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, (main_loop_counter % 400 > 200));
 	    
     /* USER CODE END WHILE */
 
