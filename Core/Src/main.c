@@ -339,11 +339,11 @@ int main(void)
 
 
 #if TEST_LOOP
-	    if (main_loop_counter % 3000 < 1000)
+	    if (main_loop_counter % 6000 < 2000)
 	    {
 	    	cmd1++;
 	    }
-	    else if (main_loop_counter % 3000 < 2000)
+	    else if (main_loop_counter % 6000 < 4000)
 	    {
 
 	    }
