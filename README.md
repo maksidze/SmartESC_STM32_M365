@@ -35,6 +35,7 @@ We'll explain later ;)
 - [ ] Link multiple controller
 - [ ] Process electric braking
 - [ ] Optimize performances
+- [ ] Communicate with BMS
 - [ ] Store datas in flash
 
 
