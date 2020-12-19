@@ -11,12 +11,12 @@
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
-  #define VARIANT_USART       // Variant for Serial control via USART3 input
+  //#define VARIANT_USART       // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
   //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
-  //#define VARIANT_HOVERCAR    // Variant for HOVERCAR build
+  #define VARIANT_HOVERCAR    // Variant for HOVERCAR build
   //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
   //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
   //#define VARIANT_SKATEBOARD  // Variant for SKATEBOARD build
@@ -140,20 +140,20 @@
 
 // Control selections
 #define CTRL_TYP_SEL    FOC_CTRL        // [-] Control type selection: COM_CTRL, SIN_CTRL, FOC_CTRL (default)
-#define CTRL_MOD_REQ    VLT_MODE        // [-] Control mode request: OPEN_MODE, VLT_MODE (default), SPD_MODE, TRQ_MODE. Note: SPD_MODE and TRQ_MODE are only available for CTRL_FOC!
+#define CTRL_MOD_REQ    TRQ_MODE        // [-] Control mode request: OPEN_MODE, VLT_MODE (default), SPD_MODE, TRQ_MODE. Note: SPD_MODE and TRQ_MODE are only available for CTRL_FOC!
 #define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 
 // Limitation settings
 #define I_MOT_MAX       30              // [A] Maximum single motor current limit
 #define I_DC_MAX        30              // [A] Maximum stage2 DC Link current limit for Commutation and Sinusoidal types (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
-#define N_MOT_MAX       1000            // [rpm] Maximum motor speed limit
+#define N_MOT_MAX       2000            // [rpm] Maximum motor speed limit
 
 // Field Weakening / Phase Advance
 #define FIELD_WEAK_ENA  0               // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
-#define FIELD_WEAK_MAX  5               // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed. Up to 10A has been tested using 10" wheels.
-#define PHASE_ADV_MAX   25              // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
-#define FIELD_WEAK_HI   1000            // (1000, 1500] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
-#define FIELD_WEAK_LO   750             // ( 500, 1000] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+#define FIELD_WEAK_MAX  10              // [A] Maximum Field Weakening D axis current (only for FOC). Higher current results in higher maximum speed. Up to 10A has been tested using 10" wheels.
+#define PHASE_ADV_MAX   0 //SINE             // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
+#define FIELD_WEAK_LO   50             // ( 500, 1000] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
+#define FIELD_WEAK_HI   1000             // (1000, 1500] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
 
 // Extra functionality
 // #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
@@ -443,36 +443,37 @@
 #ifdef VARIANT_HOVERCAR
   #undef  CTRL_MOD_REQ
   #define CTRL_MOD_REQ        TRQ_MODE  // HOVERCAR works best in TORQUE Mode
-  #define CONTROL_ADC                   // use ADC as input. disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
+  #define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+  #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
   #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
   #define ADC_PROTECT_THRESH  200       // ADC Protection threshold below/above the MIN/MAX ADC values
   
   #define INPUT1_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT1_MIN          1000      // min ADC1-value while poti at minimum-position (0 - 4095)
+  #define INPUT1_MIN          0      // min ADC1-value while poti at minimum-position (0 - 4095)
   #define INPUT1_MID          0
-  #define INPUT1_MAX          2500      // max ADC1-value while poti at maximum-position (0 - 4095)
+  #define INPUT1_MAX          1000      // max ADC1-value while poti at maximum-position (0 - 4095)
   #define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
   #define INPUT2_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT2_MIN          500       // min ADC2-value while poti at minimum-position (0 - 4095)
+  #define INPUT2_MIN          0       // min ADC2-value while poti at minimum-position (0 - 4095)
   #define INPUT2_MID          0
-  #define INPUT2_MAX          2200      // max ADC2-value while poti at maximum-position (0 - 4095)
+  #define INPUT2_MAX          1000      // max ADC2-value while poti at maximum-position (0 - 4095)
   #define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
   
-  #define SPEED_COEFFICIENT   16384     // 1.0f
+  #define SPEED_COEFFICIENT   32768     // 1.0f (16384) ->> 2.0f (32767)
   #define STEER_COEFFICIENT   0         // 0.0f
   // #define INVERT_R_DIRECTION            // Invert rotation of right motor
   // #define INVERT_L_DIRECTION            // Invert rotation of left motor
-  #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
+  // #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
   #define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
   // #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 
   // Extra functionality
-  // #define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
-  // #define STANDSTILL_HOLD_ENABLE        // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-  // #define ELECTRIC_BRAKE_ENABLE         // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-  // #define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-  // #define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
+  #define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
+//  #define STANDSTILL_HOLD_ENABLE        // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
+//  #define ELECTRIC_BRAKE_ENABLE         // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
+  #define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
+  #define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
 #endif
 
 // Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)

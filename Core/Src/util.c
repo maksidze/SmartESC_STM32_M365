@@ -414,15 +414,7 @@ void beepShortMany(uint8_t cnt, int8_t dir) {
 
 void calcAvgSpeed(void) {
     // Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-    #if   !defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot - rtY_Right.n_mot) / 2;
-    #elif !defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = ( rtY_Left.n_mot + rtY_Right.n_mot) / 2;
-    #elif  defined(INVERT_L_DIRECTION) && !defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot - rtY_Right.n_mot) / 2;
-    #elif  defined(INVERT_L_DIRECTION) &&  defined(INVERT_R_DIRECTION)
-      speedAvg    = (-rtY_Left.n_mot + rtY_Right.n_mot) / 2;
-    #endif
+    speedAvg    = rtY_Left.n_mot;
 
     // Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
     if (SPEED_COEFFICIENT & (1 << 16)) {
@@ -754,13 +746,17 @@ void cruiseControl(uint8_t button) {
       rtP_Left.b_cruiseCtrlEna  = 1;
       rtP_Right.b_cruiseCtrlEna = 1;
       cruiseCtrlAcv = 1;
+#if KX
       shortBeepMany(2, 1);                                              // 200 ms beep delay. Acts as a debounce also.
+#endif
     } else if (button && rtP_Left.b_cruiseCtrlEna && !standstillAcv) {  // Cruise control deactivated if no Standstill Hold is active
       rtP_Left.b_cruiseCtrlEna  = 0;
       rtP_Right.b_cruiseCtrlEna = 0;
       cruiseCtrlAcv = 0;
+#if KX
       shortBeepMany(2, -1);
-    }
+#endif
+      }
   #endif
 }
 
