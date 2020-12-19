@@ -162,8 +162,8 @@ void DMA1_Channel1_IRQHandler(void) {
 	rtU_Left.b_hallA = hall_ul;
 	rtU_Left.b_hallB = hall_vl;
 	rtU_Left.b_hallC = hall_wl;
-	rtU_Left.i_phaAB = curL_phaA;
-	rtU_Left.i_phaBC = curL_phaB;
+	rtU_Left.i_phaAB = analog.curr_a_cnt;
+	rtU_Left.i_phaBC = analog.curr_b_cnt;
 	// rtU_Left.i_DCLink = curL_DC;
 	// rtU_Left.a_mechAngle   = ...; // Angle input in DEGREES [0,360] in fixdt(1,16,4) data type. If `angle` is float use `= (int16_t)floor(angle * 16.0F)` If `angle` is integer use `= (int16_t)(angle << 4)`
 
