@@ -347,7 +347,20 @@ int main(void) {
 	    }
 
 #else
-		readCommand();                        // Read Command: cmd1, cmd2
+
+if (batVoltage >= 5000)
+{
+	cmd1 = 0;
+	cmd2 = 0;
+	readCommand();
+}
+else
+{
+	readCommand();                        // Read Command: cmd1, cmd2
+}
+
+
+
 #endif
 
 		calcAvgSpeed(); // Calculate average measured speed: speedAvg, speedAvgAbs
