@@ -34,14 +34,6 @@
 #define LEFT_HALL_U_PORT GPIOB
 #define LEFT_HALL_V_PORT GPIOB
 #define LEFT_HALL_W_PORT GPIOB
-
-#define RIGHT_HALL_U_PIN GPIO_PIN_10
-#define RIGHT_HALL_V_PIN GPIO_PIN_11
-#define RIGHT_HALL_W_PIN GPIO_PIN_12
-
-#define RIGHT_HALL_U_PORT GPIOC
-#define RIGHT_HALL_V_PORT GPIOC
-#define RIGHT_HALL_W_PORT GPIOC
 #else
 #define LEFT_HALL_U_PIN HALL_A_Pin
 #define LEFT_HALL_V_PIN HALL_B_Pin
@@ -88,89 +80,10 @@
 //#define LEFT_TIM_WL_PORT GPIOB
 #endif
 
-#if KX
 
-#define LEFT_DC_CUR_ADC ADC1
-#define LEFT_U_CUR_ADC ADC1
-#define LEFT_V_CUR_ADC ADC1
 
-#define LEFT_DC_CUR_PIN GPIO_PIN_0
-#define LEFT_U_CUR_PIN GPIO_PIN_0
-#define LEFT_V_CUR_PIN GPIO_PIN_3
-
-#define LEFT_DC_CUR_PORT GPIOC
-#define LEFT_U_CUR_PORT GPIOA
-#define LEFT_V_CUR_PORT GPIOC
-
-#define RIGHT_DC_CUR_ADC ADC2
-#define RIGHT_U_CUR_ADC ADC2
-#define RIGHT_V_CUR_ADC ADC2
-
-#define RIGHT_DC_CUR_PIN GPIO_PIN_1
-#define RIGHT_U_CUR_PIN GPIO_PIN_4
-#define RIGHT_V_CUR_PIN GPIO_PIN_5
-
-#define RIGHT_DC_CUR_PORT GPIOC
-#define RIGHT_U_CUR_PORT GPIOC
-#define RIGHT_V_CUR_PORT GPIOC
-
-#define DCLINK_ADC ADC3
-#define DCLINK_CHANNEL
-#define DCLINK_PIN GPIO_PIN_2
-#define DCLINK_PORT GPIOC
-#define DCLINK_PULLUP 30000
-#define DCLINK_PULLDOWN 1000
-
-#define LED_PIN GPIO_PIN_2
-#define LED_PORT GPIOB
-
-#define BUZZER_PIN GPIO_PIN_4
-#define BUZZER_PORT GPIOA
-
-#define SWITCH_PIN GPIO_PIN_1
-#define SWITCH_PORT GPIOA
-
-#define OFF_PIN GPIO_PIN_5
-#define OFF_PORT GPIOA
-
-#define BUTTON_PIN GPIO_PIN_1
-#define BUTTON_PORT GPIOA
-
-#define CHARGER_PIN GPIO_PIN_12
-#define CHARGER_PORT GPIOA
-
-#if defined(CONTROL_PPM_LEFT)
-#define PPM_PIN             GPIO_PIN_3
-#define PPM_PORT            GPIOA
-#elif defined(CONTROL_PPM_RIGHT)
-#define PPM_PIN             GPIO_PIN_11
-#define PPM_PORT            GPIOB
-#endif
-
-#if defined(CONTROL_PWM_LEFT)
-#define PWM_PIN_CH1         GPIO_PIN_2
-#define PWM_PORT_CH1        GPIOA
-#define PWM_PIN_CH2         GPIO_PIN_3
-#define PWM_PORT_CH2        GPIOA
-#elif defined(CONTROL_PWM_RIGHT)
-#define PWM_PIN_CH1         GPIO_PIN_10
-#define PWM_PORT_CH1        GPIOB
-#define PWM_PIN_CH2         GPIO_PIN_11
-#define PWM_PORT_CH2        GPIOB
-#endif
-
-#if defined(SUPPORT_BUTTONS_LEFT)
-#define BUTTON1_PIN         GPIO_PIN_2
-#define BUTTON1_PORT        GPIOA
-#define BUTTON2_PIN         GPIO_PIN_3
-#define BUTTON2_PORT        GPIOA
-#elif defined(SUPPORT_BUTTONS_RIGHT)
-#define BUTTON1_PIN         GPIO_PIN_10
-#define BUTTON1_PORT        GPIOB
-#define BUTTON2_PIN         GPIO_PIN_11
-#define BUTTON2_PORT        GPIOB
-#endif
-#endif
+#define PHASE_CURR_mA_CNT 50 //mA per bit
+#define DC_VOLT_uV_CNT 14431 //uV per bit
 
 #define DELAY_TIM_FREQUENCY_US 1000000
 
@@ -200,23 +113,17 @@
 
 /*
 typedef struct {
-	  uint16_t temp;
-  //uint16_t dcr;
-	  uint16_t batt1;
-  //uint16_t dcl;
-  uint16_t rlA;
-  uint16_t rlB;
-  uint16_t rlC;
-  uint16_t voltPhA;
-  uint16_t voltPhB;
-//  uint16_t rrB;
-//  uint16_t rrC;
-  //uint16_t batt1;
-//  uint16_t l_tx2;
-//  uint16_t l_rx2;
-} adc_buf_t;
+  uint16_t curr_a;
+  uint16_t curr_b;
+  uint16_t curr_c;
+  uint16_t volt_a;
+  uint16_t volt_b;
+  uint16_t volt_c;
+  uint16_t ntc;
+  uint16_t vbat;
 */
 
+/*
 typedef struct {
   uint16_t rlA;
   uint16_t rlB;
@@ -227,15 +134,40 @@ typedef struct {
   uint16_t temp;
   uint16_t batt1;
 } adc_buf_t;
+*/
+
+typedef struct {
+ // XIAOMI firmware
+  uint16_t curr_a;
+  uint16_t curr_b;
+  uint16_t curr_c;
+  uint16_t volt_a;
+  uint16_t volt_b;
+  uint16_t volt_c;
+  uint16_t temp;
+  uint16_t vbat;
+} adc_buf_t;
+
+typedef struct {
+  int32_t curr_a;
+  int32_t curr_b;
+  int32_t curr_c;
+
+  int16_t curr_a_cnt;
+  int16_t curr_b_cnt;
+  int16_t curr_c_cnt;
+
+  int32_t curr_dc;
+} analog_t;
+
+extern analog_t analog;
+
+
+#define PHASE_CURR_mA_CNT 50 //mA per bit
+#define DC_VOLT_uV_CNT 14431 //uV per bit
 
 
 // Define I2C, Nunchuk, PPM, PWM functions
-#if KX
-void I2C_Init(void);
-#endif
-void Nunchuk_Init(void);
-void Nunchuk_Read(void);
-uint8_t Nunchuk_Ping(void);
 void PPM_Init(void);
 void PPM_ISR_Callback(void);
 void PWM_Init(void);
@@ -251,14 +183,6 @@ void PWM_ISR_CH2_Callback(void);
 #define SENSOR1_SET         (0x01)
 #define SENSOR2_SET         (0x02)
 #define SENSOR_MPU          (0x04)
-
-// RC iBUS switch definitions. Flysky FS-i6S has SW1, SW4 - 2 positions; SW2, SW3 - 3 positions
-#define SW1_SET             (0x0100)   //  0000 0001 0000 0000
-#define SW2_SET1            (0x0200)   //  0000 0010 0000 0000
-#define SW2_SET2            (0x0400)   //  0000 0100 0000 0000
-#define SW3_SET1            (0x0800)   //  0000 1000 0000 0000
-#define SW3_SET2            (0x1000)   //  0001 0000 0000 0000
-#define SW4_SET             (0x2000)   //  0010 0000 0000 0000
 
 
 #endif // DEFINES_H

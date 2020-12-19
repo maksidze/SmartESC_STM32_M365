@@ -48,6 +48,8 @@ static int16_t pwm_margin = 110;        /* This margin allows to always have a w
 static int16_t pwm_margin = 10; // Xiaomi firmware value
 #endif
 
+analog_t analog;
+
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
@@ -64,9 +66,15 @@ static uint8_t enableFin = 0;
 static const uint16_t pwm_res = 64000000 / 2 / PWM_FREQ; // = 2000
 
 static uint16_t offsetcount = 0;
-static int16_t offsetrlA = 2000;
-static int16_t offsetrlB = 2000;
-static int16_t offsetdcl    = 2000;
+static int offset_curr_a = 2000;
+static int offset_curr_b = 2000;
+static int offset_curr_c = 2000;
+static int offset_volt_a = 0;
+static int offset_volt_b = 0;
+static int offset_volt_c = 0;
+
+uint8_T errCodeLeft;
+int16_T motSpeedLeft;
 
 int16_t voltageTimer = 0;
 int16_t batVoltage = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
@@ -85,24 +93,39 @@ void DMA1_Channel1_IRQHandler(void) {
 #define ENABLE_LOOP 1
 #if ENABLE_LOOP
 
-	if (offsetcount < 2000) {  // calibrate ADC offsets
+	if (offsetcount < 1000) {  // calibrate ADC offsets
 		offsetcount++;
-		offsetrlA = (adc_buffer.rlA + offsetrlA) / 2;
-		offsetrlB = (adc_buffer.rlB + offsetrlB) / 2;
-		//offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
+		offset_curr_a = (adc_buffer.curr_a + offset_curr_a) / 2;
+		offset_curr_b = (adc_buffer.curr_b + offset_curr_b) / 2;
+		offset_curr_c = (adc_buffer.curr_c + offset_curr_c) / 2;
+		offset_volt_a = (adc_buffer.volt_a + offset_volt_a) / 2;
+		offset_volt_b = (adc_buffer.volt_b + offset_volt_b) / 2;
+		offset_volt_c = (adc_buffer.volt_c + offset_volt_c) / 2;
 		return;
 	}
 
+	// Get motor currents
+	analog.curr_a_cnt = (offset_curr_a - adc_buffer.curr_a);
+	analog.curr_b_cnt = (offset_curr_b - adc_buffer.curr_b);
+	analog.curr_c_cnt = (offset_curr_c - adc_buffer.curr_c);
+	analog.curr_a = analog.curr_a_cnt * PHASE_CURR_mA_CNT;
+	analog.curr_b = analog.curr_b_cnt * PHASE_CURR_mA_CNT;
+	analog.curr_c = analog.curr_c_cnt * PHASE_CURR_mA_CNT;
+
+
+	// compute DC current
+	static int32_t filter_buffer;
+	filtLowPass32(
+			(analog.curr_a_cnt + analog.curr_b_cnt + analog.curr_c_cnt) / 3, 20,
+			&filter_buffer);
+	analog.curr_dc = ((filter_buffer >> 16) * (PHASE_CURR_mA_CNT * 173) / 100);
+
+	// compute DC voltage
 	voltageTimer++;
 	if (voltageTimer % 1000 == 0) { // Filter battery voltage at a slower sampling rate
-		filtLowPass32(adc_buffer.batt1, BAT_FILT_COEF, &batVoltageFixdt);
+		filtLowPass32(adc_buffer.vbat, BAT_FILT_COEF, &batVoltageFixdt);
 		batVoltage = (int16_t) (batVoltageFixdt >> 16); // convert fixed-point to integer
 	}
-
-	// Get motor currents
-	curL_phaA = (int16_t) (offsetrlA - adc_buffer.rlA);
-	curL_phaB = (int16_t) (offsetrlB - adc_buffer.rlB);
-	//curL_DC = (int16_t) (offsetdcl - adc_buffer.dcl);
 
 	// Disable PWM when current limit is reached (current chopping)
 	// This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
@@ -141,7 +164,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	rtU_Left.b_hallC = hall_wl;
 	rtU_Left.i_phaAB = curL_phaA;
 	rtU_Left.i_phaBC = curL_phaB;
-	rtU_Left.i_DCLink = curL_DC;
+	// rtU_Left.i_DCLink = curL_DC;
 	// rtU_Left.a_mechAngle   = ...; // Angle input in DEGREES [0,360] in fixdt(1,16,4) data type. If `angle` is float use `= (int16_t)floor(angle * 16.0F)` If `angle` is integer use `= (int16_t)(angle << 4)`
 
 	/* Step the controller */
@@ -153,8 +176,8 @@ void DMA1_Channel1_IRQHandler(void) {
 	ul = rtY_Left.DC_phaA;
 	vl = rtY_Left.DC_phaB;
 	wl = rtY_Left.DC_phaC;
-	// errCodeLeft  = rtY_Left.z_errCode;
-	// motSpeedLeft = rtY_Left.n_mot;
+	errCodeLeft  = rtY_Left.z_errCode;
+	motSpeedLeft = rtY_Left.n_mot;
 	// motAngleLeft = rtY_Left.a_elecAngle;
 
 	/* Apply commands */

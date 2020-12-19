@@ -348,18 +348,7 @@ int main(void) {
 
 #else
 
-if (batVoltage >= 5000)
-{
-	cmd1 = 0;
-	cmd2 = 0;
-	readCommand();
-}
-else
-{
-	readCommand();                        // Read Command: cmd1, cmd2
-}
-
-
+		readCommand();                        // Read Command: cmd1, cmd2
 
 #endif
 
