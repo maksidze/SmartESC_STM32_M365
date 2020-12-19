@@ -12,6 +12,12 @@ The controller is based on STM32F103C6T8 micro-controller.
 
 We'll explain later ;)
 
+## Requirements
+- Xiaomi controller
+- [SmartDisplay](https://github.com/Koxx3/SmartController_SmartDisplay) or arduino
+- Motor with hall sensors
+- Power (battery or power supply)
+
 ## Current status
 
 - [X] Build hover boardfirmware
