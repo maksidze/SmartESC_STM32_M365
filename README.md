@@ -36,6 +36,8 @@ We'll explain later ;)
 - [ ] Process electric braking
 - [ ] Optimize performances
 - [ ] Communicate with BMS
+  - [ ] Half-duplex
+  - [ ] Full-duplex
 - [ ] Store datas in flash
 
 
