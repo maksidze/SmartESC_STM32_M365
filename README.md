@@ -31,6 +31,10 @@ We'll explain later ;)
 - [ ] Store datas in flash
 
 
+## Controller schematics 
+
+[Here](docs/Driver V2.1 M365.pdf)
+
 ## Serial link
 
 TODO
