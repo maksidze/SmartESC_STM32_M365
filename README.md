@@ -1,4 +1,8 @@
-# SmartESC
+# [ SmartESC ]
+
+⚠️ **Warning : this is work in progress. I decline all responsability about using informations from this project** ⚠️
+
+![Logo](/img/smart_esc.png)
 
 This project is desgiend to replace the firmware inside Xiaomi M365 controller.
 
