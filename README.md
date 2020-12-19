@@ -5,12 +5,28 @@ This project is desgiend to replace the firmware inside Xiaomi M365 controller.
 It is based on the hoverboard firmware with commutation, sine and FOC algorithms.
 FOC is the most efficient algorithm and this is what we plan to use.
 
-The Xiaomi controller is well designed and can already accept up 52V without modification.
+The Xiaomi controller is well designed and can already accept up 52V (2.1 & 3.0 rev) without modification.
 With some modifications, it can accept up to 80V. And heavy modifications, 100V.
 
 The controller is based on STM32F103C6T8 micro-controller.
 
-We'll explain later ;)
+We'll explain later 
+
+Xiaomi M365 Controller details :
+
+the M365 controller exist to 3 versions and 1.4 & 2.1 have clone version more sheap
+some copy are very good, and some are bad 
+the bad copy have poor mosfet, poor aluminum heatskin but the pcb is OK 
+good copy exist only on 1.4 Rev have all good but probably not exist today  
+
+-Rev 1.4 have 60v regulator (maximum absolute) can be use to 12S battery pack maximum safety 
+-Rev 2.1 have 90v regulator (maximum absolute) can be use to 19S battery pack maximum safety 
+-Rev 3.0 is exactly the same with 2.1 but design is more stronger for current than 2.1 & 1.4
+
+stock Voltage sending limited to 54v by divided bridge resistor, but 150v tolérant 
+stock Current reading to ~ +/- 100A per negative phase*
+stock Capacitor is 1000uf 63v in stock can be change for 100V
+
 
 ## Requirements
 - Xiaomi controller
