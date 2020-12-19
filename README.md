@@ -31,12 +31,28 @@ We'll explain later ;)
 - [ ] Store datas in flash
 
 
+---
 ## Serial link
 
 TODO
 
 
 
+---
+## Flashing
+
+Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
+
+If you have never flashed your controller before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
+
+Do not power the mainboard from the 3.3V of your programmer! This has already killed multiple mainboards.
+
+Make sure you hold the powerbutton or connect a jumper to the power button pins while flashing the firmware, as the STM might release the power latch and switches itself off during flashing. Battery > 36V have to be connected while flashing.
+
+To build and flash, you need to use STM32CubeIDE.
+
+
+------
 
 # Original hoverboard-firmware-hack-FOC informations
 
@@ -158,89 +174,6 @@ This firmware offers currently these variants (selectable in [platformio.ini](/p
 - **VARIANT_SKATEBOARD**: This is for skateboard build, controlled using an RC remote with PWM signal connected to the right sensor cable.
 
 Of course the firmware can be further customized for other needs or projects.
-
-
----
-## Flashing
-
-Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
-
-If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
-
-Do not power the mainboard from the 3.3V of your programmer! This has already killed multiple mainboards.
-
-Make sure you hold the powerbutton or connect a jumper to the power button pins while flashing the firmware, as the STM might release the power latch and switches itself off during flashing. Battery > 36V have to be connected while flashing.
-
-To build and flash choose one of the following methods:
-
-### Method 1: Using Platformio IDE
-
-- open the folder in the IDE of choice (vscode or Atom)
-- press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
-
-### Method 2: Using Keil uVision
-
-- in [Keil uVision](https://www.keil.com/download/product/), open the [mainboard-hack.uvproj](/MDK-ARM/)
-- if you are asked to install missing packages, click Yes
-- click Build Target (or press F7) to build the firmware
-- click Load Code (or press F8) to flash the firmware.
-
-### Method 3: Using Linux CLI
-
-- prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
-- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
-```
-make
-```
-or you can set the variant like this
-```
-make -e VARIANT=VARIANT_####
-```
-- flash the firmware by typing:
-```
-make flash
-```
-- or
-```
-openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c flash "write_image erase build/hover.bin 0x8000000"
-```
-
-### Method 4: MacOS CLI
-- prerequisites:  first get brew https://brew.sh
-- then install stlink ST-Flash utility
-
-#### Using Make
-```
-brew install stlink
-```
-- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
-```
-make
-```
-or you can set the variant like this
-```
-make -e VARIANT=VARIANT_####
-```
-If compiling fails because something is missing just install it with brew AND leave a comment to improve this howto or pull request ;-)
-
-- flash the firmware by typing:
-```
-make flash
-```
-- if unlock is needed
-```
-make unlock
-```
-
-#### Using platformio CLI
-
-```
-brew install platformio
-platformio run -e VARIANT_####
-platformio run –target upload -e VARIANT_####
-```
-If you have set default_envs in [platformio.ini](/platformio.ini) you can ommit -e parameter
-
 
 ---
 ## Troubleshooting
