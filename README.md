@@ -31,14 +31,11 @@ We'll explain later ;)
 - [ ] Store datas in flash
 
 
----
 ## Serial link
 
 TODO
 
 
-
----
 ## Flashing
 
 Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
@@ -52,7 +49,8 @@ Make sure you hold the powerbutton or connect a jumper to the power button pins 
 To build and flash, you need to use STM32CubeIDE.
 
 
-------
+---
+---
 
 # Original hoverboard-firmware-hack-FOC informations
 
