@@ -16,6 +16,7 @@ We'll explain later ;)
 - Xiaomi controller
 - [SmartDisplay](https://github.com/Koxx3/SmartController_SmartDisplay) or arduino
 - Motor with hall sensors
+- STLink (for flashing)
 - Power (battery or power supply)
 
 ## Current status
