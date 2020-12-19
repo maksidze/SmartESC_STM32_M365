@@ -52,8 +52,8 @@ analog_t analog;
 
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
-int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
-int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
+//int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
+//int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 
 volatile int pwml = 0;
 volatile int pwmr = 0;
@@ -112,7 +112,6 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_b = analog.curr_b_cnt * PHASE_CURR_mA_CNT;
 	analog.curr_c = analog.curr_c_cnt * PHASE_CURR_mA_CNT;
 
-
 	// compute DC current
 	static int32_t filter_buffer;
 	filtLowPass32(
@@ -129,7 +128,7 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// Disable PWM when current limit is reached (current chopping)
 	// This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-	if (ABS(curL_DC) > curDC_max || enable == 0) {
+	if (ABS(analog.curr_dc) > curDC_max || enable == 0) {
 		LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
 	} else {
 		LEFT_TIM->BDTR |= TIM_BDTR_MOE;
@@ -164,7 +163,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	rtU_Left.b_hallC = hall_wl;
 	rtU_Left.i_phaAB = analog.curr_a_cnt;
 	rtU_Left.i_phaBC = analog.curr_b_cnt;
-	// rtU_Left.i_DCLink = curL_DC;
+	rtU_Left.i_DCLink = analog.curr_dc;
 	// rtU_Left.a_mechAngle   = ...; // Angle input in DEGREES [0,360] in fixdt(1,16,4) data type. If `angle` is float use `= (int16_t)floor(angle * 16.0F)` If `angle` is integer use `= (int16_t)(angle << 4)`
 
 	/* Step the controller */
@@ -176,7 +175,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	ul = rtY_Left.DC_phaA;
 	vl = rtY_Left.DC_phaB;
 	wl = rtY_Left.DC_phaC;
-	errCodeLeft  = rtY_Left.z_errCode;
+	errCodeLeft = rtY_Left.z_errCode;
 	motSpeedLeft = rtY_Left.n_mot;
 	// motAngleLeft = rtY_Left.a_elecAngle;
 
