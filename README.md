@@ -10,8 +10,6 @@ With some modifications, it can accept up to 80V. And heavy modifications, 100V.
 
 The controller is based on STM32F103C6T8 micro-controller.
 
-We'll explain later 
-
 Xiaomi M365 Controller details :
 - The M365 controller exist to 3 versions and 1.4 & 2.1 have clone version more sheap
 some copy are very good, and some are bad 
