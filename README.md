@@ -1,4 +1,42 @@
-# /\ Modified version for M365 controller /\
+# SmartESC
+
+This project is desgiend to replace the firmware inside Xiaomi M365 controller.
+
+It is based on the hoverboard firmware with commutation, sine and FOC algorithms.
+FOC is the most efficient algorithm and this is what we plan to use.
+
+The Xiaomi controller is well designed and can already accept up 52V without modification.
+With some modifications, it can accept up to 80V. And heavy modifications, 100V.
+
+The controller is based on STM32F103C6T8 micro-controller.
+
+We'll explain later ;)
+
+## Current status
+
+- [X] Build hover boardfirmware
+- [X] Flashing with STLInk
+- [X] Modify pinout for Xiaomi controller
+- [X] Spin the motor 
+  - [X] in commutation mode
+  - [X] in sine mode
+  - [X] in FOC mode (speed, voltage & FOC)
+- [X] Controller the motor with serial link
+- [ ] Create a new serial link with all data
+- [ ] Control from the [SmartDisplay](https://github.com/Koxx3/SmartController_SmartDisplay)
+- [ ] Control controller power supply from serial link
+- [ ] Link multiple controller
+- [ ] Process electric braking
+- [ ] Optimize performances
+- [ ] Store datas in flash
+
+
+## Serial link
+
+TODO
+
+
+
 
 # hoverboard-firmware-hack-FOC
 
