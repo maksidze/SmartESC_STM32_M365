@@ -25,6 +25,7 @@ We'll explain later ;)
 - [ ] Create a new serial link with all data
 - [ ] Control from the [SmartDisplay](https://github.com/Koxx3/SmartController_SmartDisplay)
 - [ ] Control controller power supply from serial link
+  - [ ] with different power for front/rear
 - [ ] Link multiple controller
 - [ ] Process electric braking
 - [ ] Optimize performances
