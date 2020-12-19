@@ -33,7 +33,7 @@ We'll explain later ;)
 
 ## Controller schematics 
 
-[Here](docs/Driver V2.1 M365.pdf)
+[Here](/docs/Driver V2.1 M365.pdf)
 
 ## Serial link
 
