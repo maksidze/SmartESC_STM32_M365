@@ -95,12 +95,7 @@ extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern volatile adc_buf_t adc_buffer;
-#if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
-  extern LCD_PCF8574_HandleTypeDef lcd;
-  extern uint8_t LCDerrorFlag;
-#endif
 
-extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 // Matlab defines - from auto-code generation
@@ -123,25 +118,10 @@ extern uint8_t timeoutFlagADC; // Timeout Flag for for ADC Protection: 0 = OK, 1
 extern uint8_t timeoutFlagSerial; // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
 extern volatile int pwml;         // global variable for pwm left. -1000 to 1000
-extern volatile int pwmr;        // global variable for pwm right. -1000 to 1000
 
 extern uint8_t enable;                  // global variable for motor enable
 
 extern int16_t batVoltage;              // global variable for battery voltage
-
-#if defined(SIDEBOARD_SERIAL_USART2)
-extern SerialSideboard Sideboard_L;
-#endif
-#if defined(SIDEBOARD_SERIAL_USART3)
-extern SerialSideboard Sideboard_R;
-#endif
-#if (defined(CONTROL_PPM_LEFT) && defined(DEBUG_SERIAL_USART3)) || (defined(CONTROL_PPM_RIGHT) && defined(DEBUG_SERIAL_USART2))
-extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
-#endif
-#if (defined(CONTROL_PWM_LEFT) && defined(DEBUG_SERIAL_USART3)) || (defined(CONTROL_PWM_RIGHT) && defined(DEBUG_SERIAL_USART2))
-extern volatile uint16_t pwm_captured_ch1_value;
-extern volatile uint16_t pwm_captured_ch2_value;
-#endif
 
 //------------------------------------------------------------------------
 // Global variables set here in main.c
@@ -157,45 +137,22 @@ typedef struct {
 	uint16_t start;
 	int16_t cmd1;
 	int16_t cmd2;
-	int16_t speedR_meas;
+	int16_t dummy;
 	int16_t speedL_meas;
 	int16_t batVoltage;
 	int16_t boardTemp;
-	uint16_t cmdLed;
+	uint16_t dummy2;
 	uint16_t checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
 #endif
-#if defined(FEEDBACK_SERIAL_USART2)
-static uint8_t sideboard_leds_L;
-#endif
-#if defined(FEEDBACK_SERIAL_USART3)
-static uint8_t sideboard_leds_R;
-#endif
-
-#ifdef VARIANT_TRANSPOTTER
-  extern uint8_t  nunchuk_connected;
-  extern float    setDistance;
-
-  static uint8_t  checkRemote = 0;
-  static uint16_t distance;
-  static float    steering;
-  static int      distanceErr;
-  static int      lastDistance = 0;
-  static uint16_t transpotter_counter = 0;
-#endif
 
 static int16_t speed;                // local variable for speed. -1000 to 1000
-#ifndef VARIANT_TRANSPOTTER
 static int16_t steer;              // local variable for steering. -1000 to 1000
 static int16_t steerRateFixdt; // local fixed-point variable for steering rate limiter
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
 static int32_t steerFixdt; // local fixed-point variable for steering low-pass filter
 static int32_t speedFixdt; // local fixed-point variable for speed low-pass filter
-#endif
-
-static uint32_t inactivity_timeout_counter;
-static MultipleTap MultipleTapBrake; // define multiple tap functionality for the Brake pedal
 
 /* USER CODE END 0 */
 
@@ -380,13 +337,11 @@ int main(void) {
 	        electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
 	      #endif
 
-#ifdef VARIANT_HOVERCAR
 		if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
-			cmd1 = (int16_t) ((-cmd1 * speedBlend) >> 15);
-		} else {
 			cmd1 = (int16_t) ((cmd1 * speedBlend) >> 15);
+		} else {
+			cmd1 = (int16_t) ((-cmd1 * speedBlend) >> 15);
 		}
-#endif
 
 		// ####### LOW-PASS FILTER #######
 		rateLimiter16(cmd1, RATE, &steerRateFixdt);
@@ -399,7 +354,7 @@ int main(void) {
 		speed = steer + speed; // Forward driving: in this case steer = Brake, speed = Throttle
 
 		// ####### MIXER #######
-		mixerFcn(speed << 4, steer << 4, &speedR, &speedL); // This function implements the equations above
+		mixerFcn(speed << 4, steer << 4, &speedL); // This function implements the equations above
 
 		////////////////////////////////////////////
 		////////////////////////////////////////////
@@ -434,18 +389,18 @@ int main(void) {
 			Feedback.start = (uint16_t) SERIAL_START_FRAME;
 			Feedback.cmd1 = (int16_t) cmd1;
 			Feedback.cmd2 = (int16_t) cmd2;
-			Feedback.speedR_meas = (int16_t) rtY_Right.n_mot;
+			Feedback.dummy = (int16_t) 0;
 			Feedback.speedL_meas = (int16_t) rtY_Left.n_mot;
 			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
 					/ BAT_CALIB_ADC);
 			Feedback.boardTemp = (int16_t) board_temp_deg_c;
 
 			if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-				Feedback.cmdLed = (uint16_t) sideboard_leds_R;
+				Feedback.dummy2 = (uint16_t) 0;
 				Feedback.checksum = (uint16_t) (Feedback.start ^ Feedback.cmd1
-						^ Feedback.cmd2 ^ Feedback.speedR_meas
+						^ Feedback.cmd2 ^ Feedback.dummy
 						^ Feedback.speedL_meas ^ Feedback.batVoltage
-						^ Feedback.boardTemp ^ Feedback.cmdLed);
+						^ Feedback.boardTemp ^ Feedback.dummy2);
 
 				HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
 						sizeof(Feedback));

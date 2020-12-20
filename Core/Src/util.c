@@ -81,10 +81,6 @@ DW       rtDW_Left;                     /* Observable states */
 ExtU     rtU_Left;                      /* External inputs */
 ExtY     rtY_Left;                      /* External outputs */
 
-P        rtP_Right;                     /* Block parameters (auto storage) */
-DW       rtDW_Right;                    /* Observable states */
-ExtU     rtU_Right;                     /* External inputs */
-ExtY     rtY_Right;                     /* External outputs */
 //---------------
 
 int16_t  cmd1;                          // normalized input value. -1000 to 1000
@@ -214,28 +210,18 @@ void BLDC_Init(void) {
   rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
   rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
 
-  rtP_Right                     = rtP_Left;     // Copy the Left motor parameters to the Right motor parameters
-  rtP_Right.z_selPhaCurMeasABC  = 1;            // Right motor measured current phases {Blue, Yellow} = {iB, iC} -> do NOT change
-
-  /* Pack LEFT motor data into RTM */
+  /* Pack motor data into RTM */
   rtM_Left->defaultParam        = &rtP_Left;
   rtM_Left->dwork               = &rtDW_Left;
   rtM_Left->inputs              = &rtU_Left;
   rtM_Left->outputs             = &rtY_Left;
 
-  /* Pack RIGHT motor data into RTM */
-  rtM_Right->defaultParam       = &rtP_Right;
-  rtM_Right->dwork              = &rtDW_Right;
-  rtM_Right->inputs             = &rtU_Right;
-  rtM_Right->outputs            = &rtY_Right;
-
   /* Initialize BLDC controllers */
   BLDC_controller_initialize(rtM_Left);
-  BLDC_controller_initialize(rtM_Right);
 }
 
 void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !    
-  if (rtP_Left.b_fieldWeakEna || rtP_Right.b_fieldWeakEna) {
+  if (rtP_Left.b_fieldWeakEna) {
     INPUT_MAX = MAX( 1000, FIELD_WEAK_HI);
     INPUT_MIN = MIN(-1000,-FIELD_WEAK_HI);
   } else {
@@ -245,33 +231,9 @@ void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 }
 
 void Input_Init(void) {
-  #if defined(CONTROL_PPM_LEFT) || defined(CONTROL_PPM_RIGHT)
-    PPM_Init();
-  #endif
-
- #if defined(CONTROL_PWM_LEFT) || defined(CONTROL_PWM_RIGHT)
-    PWM_Init();
-  #endif
-
-  #ifdef CONTROL_NUNCHUK
-    I2C_Init();
-    Nunchuk_Init();
-  #endif
-
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-    UART2_Init();
-  #endif
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(FEEDBACK_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     UART3_Init();
-  #endif
-  #if defined(DEBUG_SERIAL_USART2) || defined(CONTROL_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART2)
-    HAL_UART_Receive_DMA(&huart2, (uint8_t *)rx_buffer_L, sizeof(rx_buffer_L));
-    UART_DisableRxErrors(&huart2);
-  #endif
-  #if defined(DEBUG_SERIAL_USART3) || defined(CONTROL_SERIAL_USART3) || defined(SIDEBOARD_SERIAL_USART3)
     HAL_UART_Receive_DMA(&huart3, (uint8_t *)rx_buffer_R, sizeof(rx_buffer_R));
     UART_DisableRxErrors(&huart3);
-  #endif
 
 #if KX
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
@@ -292,8 +254,6 @@ void Input_Init(void) {
       EE_ReadVariable(VirtAddVarTab[10], &n_max);
       rtP_Left.i_max  = i_max;
       rtP_Left.n_max  = n_max;
-      rtP_Right.i_max = i_max;
-      rtP_Right.n_max = n_max;
     } else { // Else If Input type is 3 (auto), identify the input type based on the values from config.h
       if (INPUT1_TYPE == 3) { INPUT1_TYP_CAL = checkInputType(INPUT1_MIN, INPUT1_MID, INPUT1_MAX); }
       if (INPUT2_TYPE == 3) { INPUT2_TYP_CAL = checkInputType(INPUT2_MIN, INPUT2_MID, INPUT2_MAX); }
@@ -302,55 +262,6 @@ void Input_Init(void) {
   #endif
 #endif
 
-  #ifdef VARIANT_TRANSPOTTER
-    enable = 1;
-    
-    HAL_FLASH_Unlock();    
-    EE_Init();            /* EEPROM Init */
-    EE_ReadVariable(VirtAddVarTab[0], &saveValue);
-    HAL_FLASH_Lock();
-
-    setDistance = saveValue / 1000.0;
-    if (setDistance < 0.2) {
-      setDistance = 1.0;
-    }
-  #endif
-
-  #if defined(DEBUG_I2C_LCD) || defined(SUPPORT_LCD)
-    I2C_Init();
-    HAL_Delay(50);
-    lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
-    lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
-    lcd.pcf8574.i2c             = hi2c2;
-    lcd.NUMBER_OF_LINES         = NUMBER_OF_LINES_2;
-    lcd.type                    = TYPE0;
-
-    if(LCD_Init(&lcd)!=LCD_OK) {
-        // error occured
-        //TODO while(1);
-    }
-
-    LCD_ClearDisplay(&lcd);
-    HAL_Delay(5);
-    LCD_SetLocation(&lcd, 0, 0);
-    #ifdef VARIANT_TRANSPOTTER
-      LCD_WriteString(&lcd, "TranspOtter V2.1");
-    #else
-      LCD_WriteString(&lcd, "Hover V2.0");
-    #endif
-    LCD_SetLocation(&lcd,  0, 1); LCD_WriteString(&lcd, "Initializing...");
-  #endif
-
-  #if defined(VARIANT_TRANSPOTTER) && defined(SUPPORT_LCD)
-    LCD_ClearDisplay(&lcd);
-    HAL_Delay(5);
-    LCD_SetLocation(&lcd,  0, 1); LCD_WriteString(&lcd, "Bat:");
-    LCD_SetLocation(&lcd,  8, 1); LCD_WriteString(&lcd, "V");
-    LCD_SetLocation(&lcd, 15, 1); LCD_WriteString(&lcd, "A");
-    LCD_SetLocation(&lcd,  0, 0); LCD_WriteString(&lcd, "Len:");
-    LCD_SetLocation(&lcd,  8, 0); LCD_WriteString(&lcd, "m(");
-    LCD_SetLocation(&lcd, 14, 0); LCD_WriteString(&lcd, "m)");
-  #endif
 }
 
 /**
@@ -742,16 +653,13 @@ void cruiseControl(uint8_t button) {
   #ifdef CRUISE_CONTROL_SUPPORT
     if (button && !rtP_Left.b_cruiseCtrlEna) {                          // Cruise control activated
       rtP_Left.n_cruiseMotTgt   = rtY_Left.n_mot;
-      rtP_Right.n_cruiseMotTgt  = rtY_Right.n_mot;
       rtP_Left.b_cruiseCtrlEna  = 1;
-      rtP_Right.b_cruiseCtrlEna = 1;
       cruiseCtrlAcv = 1;
 #if KX
       shortBeepMany(2, 1);                                              // 200 ms beep delay. Acts as a debounce also.
 #endif
     } else if (button && rtP_Left.b_cruiseCtrlEna && !standstillAcv) {  // Cruise control deactivated if no Standstill Hold is active
       rtP_Left.b_cruiseCtrlEna  = 0;
-      rtP_Right.b_cruiseCtrlEna = 0;
       cruiseCtrlAcv = 0;
 #if KX
       shortBeepMany(2, -1);
@@ -1427,23 +1335,16 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y) {
 
   /* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL); 
   * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
-  * Outputs:      rty_speedR, rty_speedL                = int16_t
+  * Outputs:      rty_speedL                            = int16_t
   * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
   */
-void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedR, int16_t *rty_speedL) {
+void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
   int16_t prodSpeed;
-  int16_t prodSteer;
   int32_t tmp;
 
   prodSpeed   = (int16_t)((rtu_speed * (int16_t)SPEED_COEFFICIENT) >> 14);
-  prodSteer   = (int16_t)((rtu_steer * (int16_t)STEER_COEFFICIENT) >> 14);
 
-  tmp         = prodSpeed - prodSteer;  
-  tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
-  *rty_speedR = (int16_t)(tmp >> 4);        // Convert from fixed-point to int 
-  *rty_speedR = CLAMP(*rty_speedR, INPUT_MIN, INPUT_MAX);
-
-  tmp         = prodSpeed + prodSteer;
+  tmp         = prodSpeed;
   tmp         = CLAMP(tmp, -32768, 32767);  // Overflow protection
   *rty_speedL = (int16_t)(tmp >> 4);        // Convert from fixed-point to int
   *rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);

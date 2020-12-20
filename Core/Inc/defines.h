@@ -148,6 +148,7 @@ typedef struct {
   uint16_t vbat;
 } adc_buf_t;
 
+
 typedef struct {
   int32_t curr_a;
   int32_t curr_b;
