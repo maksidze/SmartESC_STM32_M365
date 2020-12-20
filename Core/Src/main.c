@@ -336,7 +336,7 @@ int main(void) {
 			Feedback.cmd1 = (int16_t) cmd1;
 			Feedback.cmd2 = (int16_t) cmd2;
 			Feedback.currDC = (int16_t) analog.curr_dc;
-			Feedback.speedL_meas = (int16_t) rtY_Motor.n_mot;
+			Feedback.speedL_meas = (int16_t) - rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
 			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
 					/ BAT_CALIB_ADC);
 			Feedback.boardTemp = (int16_t) board_temp_deg_c;
