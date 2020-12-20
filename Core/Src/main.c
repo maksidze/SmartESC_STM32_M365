@@ -29,6 +29,7 @@
 #include "util.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
+#include "bldc.h"
 
 #define TEST_LOOP 0
 
@@ -234,48 +235,6 @@ int main(void) {
 	int16_t board_temp_adcFilt = adc_buffer.temp;
 	int16_t board_temp_deg_c;
 
-	//////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////   DIRTY       /////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////
-
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-
-	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
-	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
-
-	htim1.Instance->RCR = 1;
-
-	__HAL_TIM_ENABLE(&htim1);
-
-	htim3.Instance->RCR = 1;
-
-	__HAL_TIM_ENABLE(&htim3);
-
-	hadc1.Instance->CR2 |= ADC_CR2_DMA | ADC_CR2_TSVREFE;
-	__HAL_ADC_ENABLE(&hadc1);
-
-	hadc2.Instance->CR2 |= ADC_CR2_DMA;
-	__HAL_ADC_ENABLE(&hadc2);
-
-	__HAL_RCC_DMA1_CLK_ENABLE();
-
-	DMA1_Channel1->CCR = 0;
-	DMA1_Channel1->CNDTR = 4;
-	DMA1_Channel1->CPAR = (uint32_t) &(ADC1->DR);
-	DMA1_Channel1->CMAR = (uint32_t) &adc_buffer;
-	DMA1_Channel1->CCR = DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1 | DMA_CCR_MINC
-			| DMA_CCR_CIRC | DMA_CCR_TCIE;
-	DMA1_Channel1->CCR |= DMA_CCR_EN;
-
-	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-//////////////////////////////////////////////////////////////////////////////
-
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -284,11 +243,9 @@ int main(void) {
 
 		HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
+		readCommand();                        // Read Command: cmd1, cmd2
 
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-
+#define LOOP_INC	    1000
 
 #define AUTOSTART 0
 #if AUTOSTART
@@ -299,7 +256,7 @@ int main(void) {
 		}
 #endif
 
-#define LOOP_INC	    1000
+#define DEFINE_LOOP 0
 #if TEST_LOOP
 
 
@@ -315,14 +272,6 @@ int main(void) {
 	    {
 	    	cmd1--;
 	    }
-
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-#else
-
-		readCommand();                        // Read Command: cmd1, cmd2
-
 #endif
 
 		calcAvgSpeed(); // Calculate average measured speed: speedAvg, speedAvgAbs
@@ -394,9 +343,9 @@ int main(void) {
 			if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
 				Feedback.dummy2 = (uint16_t) 0;
 				Feedback.checksum = (uint16_t) (Feedback.start ^ Feedback.cmd1
-						^ Feedback.cmd2 ^ Feedback.dummy
-						^ Feedback.speedL_meas ^ Feedback.batVoltage
-						^ Feedback.boardTemp ^ Feedback.dummy2);
+						^ Feedback.cmd2 ^ Feedback.dummy ^ Feedback.speedL_meas
+						^ Feedback.batVoltage ^ Feedback.boardTemp
+						^ Feedback.dummy2);
 
 				HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
 						sizeof(Feedback));
@@ -567,6 +516,17 @@ static void MX_ADC1_Init(void) {
 	}
 	/* USER CODE BEGIN ADC1_Init 2 */
 
+	hadc1.Instance->CR2 |= ADC_CR2_DMA | ADC_CR2_TSVREFE;
+	__HAL_ADC_ENABLE(&hadc1);
+
+	DMA1_Channel1->CCR = 0;
+	DMA1_Channel1->CNDTR = 4; // KX : 5 dans projet projet original
+	DMA1_Channel1->CPAR = (uint32_t) &(ADC1->DR);
+	DMA1_Channel1->CMAR = (uint32_t) &adc_buffer;
+	DMA1_Channel1->CCR = DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1 | DMA_CCR_MINC
+			| DMA_CCR_CIRC | DMA_CCR_TCIE;
+	DMA1_Channel1->CCR |= DMA_CCR_EN;
+
 	/* USER CODE END ADC1_Init 2 */
 
 }
@@ -629,6 +589,9 @@ static void MX_ADC2_Init(void) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN ADC2_Init 2 */
+
+	hadc2.Instance->CR2 |= ADC_CR2_DMA;
+	__HAL_ADC_ENABLE(&hadc2);
 
 	/* USER CODE END ADC2_Init 2 */
 
@@ -708,6 +671,18 @@ static void MX_TIM1_Init(void) {
 	}
 	/* USER CODE BEGIN TIM1_Init 2 */
 
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+
+	htim1.Instance->RCR = 1;
+
+	__HAL_TIM_ENABLE(&htim1);
+
 	/* USER CODE END TIM1_Init 2 */
 	HAL_TIM_MspPostInit(&htim1);
 
@@ -756,6 +731,10 @@ static void MX_TIM3_Init(void) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN TIM3_Init 2 */
+
+	htim3.Instance->RCR = 1;
+
+	__HAL_TIM_ENABLE(&htim3);
 
 	/* USER CODE END TIM3_Init 2 */
 

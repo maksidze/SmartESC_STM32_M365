@@ -37,32 +37,13 @@
 extern volatile adc_buf_t adc_buffer;
 extern UART_HandleTypeDef huart3;
 
-extern int16_t batVoltage;
-extern uint8_t backwardDrive;
-extern uint8_t buzzerCount; // global variable for the buzzer counts. can be 1, 2, 3, 4, 5, 6, 7...
-extern uint8_t buzzerFreq; // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
-extern uint8_t buzzerPattern; // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
-
 extern uint8_t enable;                  // global variable for motor enable
 
-extern uint8_t nunchuk_data[6];
 extern volatile uint32_t timeoutCnt; // global variable for general timeout counter
-extern volatile uint32_t main_loop_counter;
 
 //------------------------------------------------------------------------
 // Global variables set here in util.c
 //------------------------------------------------------------------------
-// Matlab defines - from auto-code generation
-//---------------
-RT_MODEL rtM_Left_; /* Real-time model */
-RT_MODEL *const rtM_Left = &rtM_Left_;
-
-extern P rtP_Left; /* Block parameters (auto storage) */
-DW rtDW_Left; /* Observable states */
-ExtU rtU_Left; /* External inputs */
-ExtY rtY_Left; /* External outputs */
-
-//---------------
 
 int16_t cmd1;                          // normalized input value. -1000 to 1000
 int16_t cmd2;                          // normalized input value. -1000 to 1000
@@ -88,14 +69,6 @@ static int16_t INPUT_MIN;             // [-] Input target minimum limitation
 
 static uint8_t cur_spd_valid = 0;
 static uint8_t inp_cal_valid = 0;
-static uint16_t INPUT1_TYP_CAL = INPUT1_TYPE;
-static uint16_t INPUT1_MIN_CAL = INPUT1_MIN;
-static uint16_t INPUT1_MID_CAL = INPUT1_MID;
-static uint16_t INPUT1_MAX_CAL = INPUT1_MAX;
-static uint16_t INPUT2_TYP_CAL = INPUT2_TYPE;
-static uint16_t INPUT2_MIN_CAL = INPUT2_MIN;
-static uint16_t INPUT2_MID_CAL = INPUT2_MID;
-static uint16_t INPUT2_MAX_CAL = INPUT2_MAX;
 
 static uint8_t rx_buffer_R[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
@@ -112,33 +85,21 @@ static uint8_t brakePressed;
 static uint8_t cruiseCtrlAcv = 0;
 static uint8_t standstillAcv = 0;
 
+// Matlab defines - from auto-code generation
+//---------------
+//RT_MODEL rtM_Left_;                     /* Real-time model */
+extern RT_MODEL *const rtM_Left;
+
+extern P rtP_Left;                      /* Block parameters (auto storage) */
+extern DW       rtDW_Left;                     /* Observable states */
+extern ExtU     rtU_Left;                      /* External inputs */
+extern ExtY     rtY_Left;                      /* External outputs */
+
+
 /* =========================== Initialization Functions =========================== */
 
-void BLDC_Init(void) {
-	/* Set BLDC controller parameters */
-	rtP_Left.b_angleMeasEna = 0; // Motor angle input: 0 = estimated angle, 1 = measured angle (e.g. if encoder is available)
-	rtP_Left.z_selPhaCurMeasABC = 0; // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
-	rtP_Left.z_ctrlTypSel = CTRL_TYP_SEL;
-	rtP_Left.b_diagEna = DIAG_ENA;
-	rtP_Left.i_max = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
-	rtP_Left.n_max = N_MOT_MAX << 4;                       // fixdt(1,16,4)
-	rtP_Left.b_fieldWeakEna = FIELD_WEAK_ENA;
-	rtP_Left.id_fieldWeakMax = (FIELD_WEAK_MAX * A2BIT_CONV) << 4; // fixdt(1,16,4)
-	rtP_Left.a_phaAdvMax = PHASE_ADV_MAX << 4;                  // fixdt(1,16,4)
-	rtP_Left.r_fieldWeakHi = FIELD_WEAK_HI << 4;                // fixdt(1,16,4)
-	rtP_Left.r_fieldWeakLo = FIELD_WEAK_LO << 4;                // fixdt(1,16,4)
 
-	/* Pack motor data into RTM */
-	rtM_Left->defaultParam = &rtP_Left;
-	rtM_Left->dwork = &rtDW_Left;
-	rtM_Left->inputs = &rtU_Left;
-	rtM_Left->outputs = &rtY_Left;
-
-	/* Initialize BLDC controllers */
-	BLDC_controller_initialize(rtM_Left);
-}
-
-void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !    
+void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 	if (rtP_Left.b_fieldWeakEna) {
 		INPUT_MAX = MAX(1000, FIELD_WEAK_HI);
 		INPUT_MIN = MIN(-1000, -FIELD_WEAK_HI);
@@ -160,16 +121,8 @@ void Input_Init(void) {
     EE_Init();            /* EEPROM Init */
     EE_ReadVariable(VirtAddVarTab[0], &writeCheck);
     if (writeCheck == FLASH_WRITE_KEY) {
-      EE_ReadVariable(VirtAddVarTab[1] , &INPUT1_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[2] , &INPUT1_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[3] , &INPUT1_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[4] , &INPUT1_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[5] , &INPUT2_TYP_CAL);
-      EE_ReadVariable(VirtAddVarTab[6] , &INPUT2_MIN_CAL);
-      EE_ReadVariable(VirtAddVarTab[7] , &INPUT2_MID_CAL);
-      EE_ReadVariable(VirtAddVarTab[8] , &INPUT2_MAX_CAL);
-      EE_ReadVariable(VirtAddVarTab[9] , &i_max);
-      EE_ReadVariable(VirtAddVarTab[10], &n_max);
+      EE_ReadVariable(VirtAddVarTab[1] , &i_max);
+      EE_ReadVariable(VirtAddVarTab[2], &n_max);
       rtP_Left.i_max  = i_max;
       rtP_Left.n_max  = n_max;
     } else { // Else If Input type is 3 (auto), identify the input type based on the values from config.h
@@ -298,30 +251,13 @@ void updateCurSpdLim(void) {
  * This function makes sure data is not lost after power-off
  */
 void saveConfig() {
-#ifdef VARIANT_TRANSPOTTER
-    if (saveValue_valid) {
-      HAL_FLASH_Unlock();
-      EE_WriteVariable(VirtAddVarTab[0], saveValue);
-      HAL_FLASH_Lock();
-    }
-  #endif
-#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
 	if (inp_cal_valid || cur_spd_valid) {
 		HAL_FLASH_Unlock();
 		EE_WriteVariable(VirtAddVarTab[0], FLASH_WRITE_KEY);
-		EE_WriteVariable(VirtAddVarTab[1], INPUT1_TYP_CAL);
-		EE_WriteVariable(VirtAddVarTab[2], INPUT1_MIN_CAL);
-		EE_WriteVariable(VirtAddVarTab[3], INPUT1_MID_CAL);
-		EE_WriteVariable(VirtAddVarTab[4], INPUT1_MAX_CAL);
-		EE_WriteVariable(VirtAddVarTab[5], INPUT2_TYP_CAL);
-		EE_WriteVariable(VirtAddVarTab[6], INPUT2_MIN_CAL);
-		EE_WriteVariable(VirtAddVarTab[7], INPUT2_MID_CAL);
-		EE_WriteVariable(VirtAddVarTab[8], INPUT2_MAX_CAL);
-		EE_WriteVariable(VirtAddVarTab[9], rtP_Left.i_max);
-		EE_WriteVariable(VirtAddVarTab[10], rtP_Left.n_max);
+		EE_WriteVariable(VirtAddVarTab[1], rtP_Left.i_max);
+		EE_WriteVariable(VirtAddVarTab[2], rtP_Left.n_max);
 		HAL_FLASH_Lock();
 	}
-#endif
 }
 
 /*
@@ -351,7 +287,7 @@ void standstillHold(void) {
         standstillAcv = 0;
       }
     }
-  #endif
+#endif
 }
 
 /*
@@ -388,7 +324,7 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
     } else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
       cmd2 = MIN(brakeVal, ((cmd2 + ELECTRIC_BRAKE_THRES) * INPUT_MIN) / (INPUT_MIN + ELECTRIC_BRAKE_THRES));
     }
-  #endif
+#endif
 }
 
 /*
@@ -404,15 +340,9 @@ void cruiseControl(uint8_t button) {
 		rtP_Left.n_cruiseMotTgt = rtY_Left.n_mot;
 		rtP_Left.b_cruiseCtrlEna = 1;
 		cruiseCtrlAcv = 1;
-#if KX
-      shortBeepMany(2, 1);                                              // 200 ms beep delay. Acts as a debounce also.
-#endif
 	} else if (button && rtP_Left.b_cruiseCtrlEna && !standstillAcv) { // Cruise control deactivated if no Standstill Hold is active
 		rtP_Left.b_cruiseCtrlEna = 0;
 		cruiseCtrlAcv = 0;
-#if KX
-      shortBeepMany(2, -1);
-#endif
 	}
 #endif
 }
@@ -520,19 +450,8 @@ void readCommand(void) {
 	}
 	timeoutFlagSerial = timeoutFlagSerial_R;
 
-#if KX
-#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-  cmd1 = addDeadBand(input1, INPUT1_TYP_CAL, INPUT1_DEADBAND, INPUT1_MIN_CAL, INPUT1_MID_CAL, INPUT1_MAX_CAL, INPUT_MIN, INPUT_MAX);
-  #if !defined(VARIANT_SKATEBOARD)
-    cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT_MIN, INPUT_MAX);
-  #else
-    cmd2 = addDeadBand(input2, INPUT2_TYP_CAL, INPUT2_DEADBAND, INPUT2_MIN_CAL, INPUT2_MID_CAL, INPUT2_MAX_CAL, INPUT2_BRAKE, INPUT_MAX);
-  #endif
-#endif
-#else
 	cmd1 = input1;
 	cmd2 = input2;
-#endif
 
 	brakePressed = (uint8_t) (cmd1 > 50);
 
@@ -546,7 +465,7 @@ void readCommand(void) {
 
 #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
       cruiseControl(button1);                                           // Cruise control activation/deactivation
-    #endif    
+#endif
 }
 
 /*
@@ -583,243 +502,24 @@ void usart3_rx_check(void) {
 }
 
 /*
- * Process Rx debug user command input
- */
-#if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-void usart_process_debug(uint8_t *userCommand, uint32_t len)
-{
-  for (; len > 0; len--, userCommand++) {
-    if (*userCommand != '\n' && *userCommand != '\r') {   // Do not accept 'new line' and 'carriage return' commands
-      consoleLog("-- Command received --\r\n");
-      // handle_input(*userCommand);                      // -> Create this function to handle the user commands
-    }
-  }
-}
-#endif // SERIAL_DEBUG
-
-/*
  * Process command Rx data
  * - if the command_in data is valid (correct START_FRAME and checksum) copy the command_in to command_out
  */
-#if defined(CONTROL_SERIAL_USART2) || defined(CONTROL_SERIAL_USART3)
 void usart_process_command(SerialCommand *command_in,
 		SerialCommand *command_out, uint8_t usart_idx) {
-#ifdef CONTROL_IBUS
-    if (command_in->start == IBUS_LENGTH && command_in->type == IBUS_COMMAND) {
-      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
-      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
-        ibus_chksum -= command_in->channels[i];
-      }
-      if (ibus_chksum == (uint16_t)((command_in->checksumh << 8) + command_in->checksuml)) {
-        *command_out = *command_in;
-        if (usart_idx == 2) {             // Sideboard USART2
-          #ifdef CONTROL_SERIAL_USART2
-          timeoutCntSerial_L  = 0;        // Reset timeout counter
-          timeoutFlagSerial_L = 0;        // Clear timeout flag
-          #endif
-        } else if (usart_idx == 3) {      // Sideboard USART3
-          #ifdef CONTROL_SERIAL_USART3
-          timeoutCntSerial_R  = 0;        // Reset timeout counter
-          timeoutFlagSerial_R = 0;        // Clear timeout flag
-          #endif
-        }
-      }
-    }
-  #else
+
 	uint16_t checksum;
 	if (command_in->start == SERIAL_START_FRAME) {
 		checksum = (uint16_t) (command_in->start ^ command_in->steer
 				^ command_in->speed);
 		if (command_in->checksum == checksum) {
 			*command_out = *command_in;
-			if (usart_idx == 2) {             // Sideboard USART2
-#ifdef CONTROL_SERIAL_USART2
-        timeoutCntSerial_L  = 0;        // Reset timeout counter
-        timeoutFlagSerial_L = 0;        // Clear timeout flag
-        #endif
-			} else if (usart_idx == 3) {      // Sideboard USART3
-#ifdef CONTROL_SERIAL_USART3
+			if (usart_idx == 3) {      // Sideboard USART3
 				timeoutCntSerial_R = 0;        // Reset timeout counter
 				timeoutFlagSerial_R = 0;        // Clear timeout flag
-#endif
 			}
 		}
 	}
-#endif
-}
-#endif
-
-/*
- * Process Sideboard Rx data
- * - if the Sideboard_in data is valid (correct START_FRAME and checksum) copy the Sideboard_in to Sideboard_out
- */
-#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-void usart_process_sideboard(SerialSideboard *Sideboard_in, SerialSideboard *Sideboard_out, uint8_t usart_idx)
-{
-  uint16_t checksum;
-  if (Sideboard_in->start == SERIAL_START_FRAME) {
-    checksum = (uint16_t)(Sideboard_in->start ^ Sideboard_in->pitch ^ Sideboard_in->dPitch ^ Sideboard_in->cmd1 ^ Sideboard_in->cmd2 ^ Sideboard_in->sensors);
-    if (Sideboard_in->checksum == checksum) {
-      *Sideboard_out = *Sideboard_in;
-      if (usart_idx == 2) {             // Sideboard USART2
-        #ifdef SIDEBOARD_SERIAL_USART2
-        timeoutCntSerial_L  = 0;        // Reset timeout counter
-        timeoutFlagSerial_L = 0;        // Clear timeout flag
-        #endif
-      } else if (usart_idx == 3) {      // Sideboard USART3
-        #ifdef SIDEBOARD_SERIAL_USART3
-        timeoutCntSerial_R  = 0;        // Reset timeout counter
-        timeoutFlagSerial_R = 0;        // Clear timeout flag
-        #endif
-      }
-    }
-  }
-}
-#endif
-
-/* =========================== Sideboard Functions =========================== */
-
-/*
- * Sideboard LEDs Handling
- * This function manages the leds behavior connected to the sideboard
- */
-void sideboardLeds(uint8_t *leds) {
-#if defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3)
-    // Enable flag: use LED4 (bottom Blue)
-    // enable == 1, turn on led
-    // enable == 0, blink led
-    if (enable) {
-      *leds |= LED4_SET;
-    } else if (!enable && (main_loop_counter % 20 == 0)) {
-      *leds ^= LED4_SET;
-    }
-
-    // Backward Drive: use LED5 (upper Blue)
-    // backwardDrive == 1, blink led
-    // backwardDrive == 0, turn off led
-    if (backwardDrive && (main_loop_counter % 50 == 0)) {
-      *leds ^= LED5_SET;
-    }
-
-    // Brake: use LED5 (upper Blue)
-    // brakePressed == 1, turn on led
-    // brakePressed == 0, turn off led
-    #ifdef VARIANT_HOVERCAR
-      if (brakePressed) {
-        *leds |= LED5_SET;
-      } else if (!brakePressed && !backwardDrive) {
-        *leds &= ~LED5_SET;
-      }
-    #endif
-
-    // Battery Level Indicator: use LED1, LED2, LED3
-    if (main_loop_counter % BAT_BLINK_INTERVAL == 0) {              //  | RED (LED1) | YELLOW (LED3) | GREEN (LED2) |
-      if (batVoltage < BAT_DEAD) {                                  //  |     0      |       0       |      0       |
-        *leds &= ~LED1_SET & ~LED3_SET & ~LED2_SET;          
-      } else if (batVoltage < BAT_LVL1) {                           //  |     B      |       0       |      0       |
-        *leds ^= LED1_SET;
-        *leds &= ~LED3_SET & ~LED2_SET;
-      } else if (batVoltage < BAT_LVL2) {                           //  |     1      |       0       |      0       |
-        *leds |= LED1_SET;
-        *leds &= ~LED3_SET & ~LED2_SET;
-      } else if (batVoltage < BAT_LVL3) {                           //  |     0      |       B       |      0       |
-        *leds ^= LED3_SET;
-        *leds &= ~LED1_SET & ~LED2_SET;
-      } else if (batVoltage < BAT_LVL4) {                           //  |     0      |       1       |      0       |
-        *leds |= LED3_SET;
-        *leds &= ~LED1_SET & ~LED2_SET;
-      } else if (batVoltage < BAT_LVL5) {                           //  |     0      |       0       |      B       |
-        *leds ^= LED2_SET;
-        *leds &= ~LED1_SET & ~LED3_SET;
-      } else {                                                      //  |     0      |       0       |      1       |
-        *leds |= LED2_SET;
-        *leds &= ~LED1_SET & ~LED3_SET;
-      }
-    }
-
-    // Error handling
-    // Critical error:  LED1 on (RED)     + high pitch beep (hadled in main)
-    // Soft error:      LED3 on (YELLOW)  + low  pitch beep (hadled in main)
-    if (rtY_Left.z_errCode || rtY_Right.z_errCode) {
-      *leds |= LED1_SET;
-      *leds &= ~LED3_SET & ~LED2_SET;
-    }
-    if (timeoutFlagADC || timeoutFlagSerial) {
-      *leds |= LED3_SET;
-      *leds &= ~LED1_SET & ~LED2_SET;
-    }
-  #endif
-}
-
-/*
- * Sideboard Sensor Handling
- * This function manages the sideboards photo sensors.
- * In non-hoverboard variants, the sensors are used as push buttons.
- */
-void sideboardSensors(uint8_t sensors) {
-#if !defined(VARIANT_HOVERBOARD) && (defined(SIDEBOARD_SERIAL_USART2) || defined(SIDEBOARD_SERIAL_USART3))
-    static uint8_t  sensor1_prev, sensor2_prev;
-    uint8_t sensor1_rising_edge, sensor2_rising_edge;
-    sensor1_rising_edge  = (sensors & SENSOR1_SET) && !sensor1_prev;
-    sensor2_rising_edge  = (sensors & SENSOR2_SET) && !sensor2_prev;
-    sensor1_prev         =  sensors & SENSOR1_SET;
-    sensor2_prev         =  sensors & SENSOR2_SET;
-
-    // Control MODE and Control Type Handling: use Sensor1 as push button
-    static uint8_t  sensor1_index;          // holds the press index number for sensor1, when used as a button
-    if (sensor1_rising_edge) {
-      sensor1_index++;
-      if (sensor1_index > 4) { sensor1_index = 0; }
-      switch (sensor1_index) {
-        case 0:     // FOC VOLTAGE
-          rtP_Left.z_ctrlTypSel  = FOC_CTRL;
-          rtP_Right.z_ctrlTypSel = FOC_CTRL;
-          ctrlModReqRaw          = VLT_MODE;
-          break;
-        case 1:     // FOC SPEED
-          ctrlModReqRaw          = SPD_MODE;
-          break;
-        case 2:     // FOC TORQUE
-          ctrlModReqRaw          = TRQ_MODE;
-          break;
-        case 3:     // SINUSOIDAL
-          rtP_Left.z_ctrlTypSel  = SIN_CTRL;
-          rtP_Right.z_ctrlTypSel = SIN_CTRL;
-          break;
-        case 4:     // COMMUTATION
-          rtP_Left.z_ctrlTypSel  = COM_CTRL;
-          rtP_Right.z_ctrlTypSel = COM_CTRL;
-          break;    
-      }
-      beepShortMany(sensor1_index + 1, 1);
-    }
-
-    // Field Weakening: use Sensor2 as push button
-    #ifdef CRUISE_CONTROL_SUPPORT
-      if (sensor2_rising_edge) {
-        cruiseControl(sensor2_rising_edge);
-      }
-    #else
-      static uint8_t  sensor2_index;          // holds the press index number for sensor2, when used as a button
-      if (sensor2_rising_edge) {
-        sensor2_index++;
-        if (sensor2_index > 1) { sensor2_index = 0; }
-        switch (sensor2_index) {
-          case 0:     // FW Disabled
-            rtP_Left.b_fieldWeakEna  = 0; 
-            rtP_Right.b_fieldWeakEna = 0;
-            Input_Lim_Init();
-            break;
-          case 1:     // FW Enabled
-            rtP_Left.b_fieldWeakEna  = 1; 
-            rtP_Right.b_fieldWeakEna = 1;
-            Input_Lim_Init();
-            break; 
-        }
-        beepShortMany(sensor2_index + 1, 1);            
-      }
-    #endif  // CRUISE_CONTROL_SUPPORT
-  #endif
 }
 
 /* =========================== Filtering Functions =========================== */
@@ -844,17 +544,6 @@ void filtLowPass32(int32_t u, uint16_t coef, int32_t *y) {
 	tmp = CLAMP(tmp, -2147483648LL, 2147483647LL); // Overflow protection: 2147483647LL = 2^31 - 1
 	*y = (int32_t) tmp + (*y);
 }
-// Old filter
-// Inputs:       u     = int16
-// Outputs:      y     = fixdt(1,32,20)
-// Parameters:   coef  = fixdt(0,16,16) = [0,65535U]
-// yint = (int16_t)(y >> 20); // the integer output is the fixed-point ouput shifted by 20 bits
-// void filtLowPass32(int16_t u, uint16_t coef, int32_t *y) {
-//   int32_t tmp;
-//   tmp = (int16_t)(u << 4) - (*y >> 16);
-//   tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
-//   *y  = coef * tmp + (*y);
-// }
 
 /* rateLimiter16(int16_t u, int16_t rate, int16_t *y);
  * Inputs:       u     = int16
@@ -894,66 +583,5 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
 	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
 	*rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);
-}
-
-/* =========================== Multiple Tap Function =========================== */
-
-/* multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x)
- * This function detects multiple tap presses, such as double tapping, triple tapping, etc.
- * Inputs:       u = int16_t (input signal); timeNow = uint32_t (current time)
- * Outputs:      x->b_multipleTap (get the output here)
- */
-void multipleTapDet(int16_t u, uint32_t timeNow, MultipleTap *x) {
-	uint8_t b_timeout;
-	uint8_t b_hyst;
-	uint8_t b_pulse;
-	uint8_t z_pulseCnt;
-	uint8_t z_pulseCntRst;
-	uint32_t t_time;
-
-	// Detect hysteresis
-	if (x->b_hysteresis) {
-		b_hyst = (u > MULTIPLE_TAP_LO);
-	} else {
-		b_hyst = (u > MULTIPLE_TAP_HI);
-	}
-
-	// Detect pulse
-	b_pulse = (b_hyst != x->b_hysteresis);
-
-	// Save time when first pulse is detected
-	if (b_hyst && b_pulse && (x->z_pulseCntPrev == 0)) {
-		t_time = timeNow;
-	} else {
-		t_time = x->t_timePrev;
-	}
-
-	// Create timeout boolean
-	b_timeout = (timeNow - t_time > MULTIPLE_TAP_TIMEOUT);
-
-	// Create pulse counter
-	if ((!b_hyst) && (x->z_pulseCntPrev == 0)) {
-		z_pulseCnt = 0U;
-	} else {
-		z_pulseCnt = b_pulse;
-	}
-
-	// Reset counter if we detected complete tap presses OR there is a timeout
-	if ((x->z_pulseCntPrev >= MULTIPLE_TAP_NR) || b_timeout) {
-		z_pulseCntRst = 0U;
-	} else {
-		z_pulseCntRst = x->z_pulseCntPrev;
-	}
-	z_pulseCnt = z_pulseCnt + z_pulseCntRst;
-
-	// Check if complete tap presses are detected AND no timeout
-	if ((z_pulseCnt >= MULTIPLE_TAP_NR) && (!b_timeout)) {
-		x->b_multipleTap = !x->b_multipleTap;	// Toggle output
-	}
-
-	// Update states
-	x->z_pulseCntPrev = z_pulseCnt;
-	x->b_hysteresis = b_hyst;
-	x->t_timePrev = t_time;
 }
 

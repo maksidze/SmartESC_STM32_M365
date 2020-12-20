@@ -39,6 +39,15 @@ extern DW rtDW_Left; /* Observable states */
 extern ExtU rtU_Left; /* External inputs */
 extern ExtY rtY_Left; /* External outputs */
 
+RT_MODEL rtM_Left_; /* Real-time model */
+RT_MODEL *const rtM_Left = &rtM_Left_;
+
+extern P rtP_Left; /* Block parameters (auto storage) */
+DW rtDW_Left; /* Observable states */
+ExtU rtU_Left; /* External inputs */
+ExtY rtY_Left; /* External outputs */
+
+
 // ###############################################################################
 
 #if KX
@@ -53,7 +62,6 @@ analog_t analog;
 extern uint8_t ctrlModReq;
 static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
-int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 
 volatile int pwml = 0;
 volatile int pwmr = 0;
@@ -80,6 +88,34 @@ int16_t voltageTimer = 0;
 int16_t batVoltage = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
 static int32_t batVoltageFixdt = (400 * BAT_CELLS * BAT_CALIB_ADC)
 		/ BAT_CALIB_REAL_VOLTAGE << 16; // Fixed-point filter output initialized at 400 V*100/cell = 4 V/cell converted to fixed-point
+
+// =================================
+// Init motor params
+// =================================
+void BLDC_Init(void) {
+  /* Set BLDC controller parameters */
+  rtP_Left.b_angleMeasEna       = 0;            // Motor angle input: 0 = estimated angle, 1 = measured angle (e.g. if encoder is available)
+  rtP_Left.z_selPhaCurMeasABC   = 0;            // Left motor measured current phases {Green, Blue} = {iA, iB} -> do NOT change
+  rtP_Left.z_ctrlTypSel         = CTRL_TYP_SEL;
+  rtP_Left.b_diagEna            = DIAG_ENA;
+  rtP_Left.i_max                = (I_MOT_MAX * A2BIT_CONV) << 4;        // fixdt(1,16,4)
+  rtP_Left.n_max                = N_MOT_MAX << 4;                       // fixdt(1,16,4)
+  rtP_Left.b_fieldWeakEna       = FIELD_WEAK_ENA;
+  rtP_Left.id_fieldWeakMax      = (FIELD_WEAK_MAX * A2BIT_CONV) << 4;   // fixdt(1,16,4)
+  rtP_Left.a_phaAdvMax          = PHASE_ADV_MAX << 4;                   // fixdt(1,16,4)
+  rtP_Left.r_fieldWeakHi        = FIELD_WEAK_HI << 4;                   // fixdt(1,16,4)
+  rtP_Left.r_fieldWeakLo        = FIELD_WEAK_LO << 4;                   // fixdt(1,16,4)
+
+  /* Pack LEFT motor data into RTM */
+  rtM_Left->defaultParam        = &rtP_Left;
+  rtM_Left->dwork               = &rtDW_Left;
+  rtM_Left->inputs              = &rtU_Left;
+  rtM_Left->outputs             = &rtY_Left;
+
+  /* Initialize BLDC controllers */
+  BLDC_controller_initialize(rtM_Left);
+}
+
 
 // =================================
 // DMA interrupt frequency =~ 16 kHz
