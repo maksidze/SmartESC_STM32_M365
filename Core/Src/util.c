@@ -570,7 +570,7 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y) {
  * Outputs:      rty_speedL                            = int16_t
  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
  */
-void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
+void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speed) {
 	int16_t prodSpeed;
 	int32_t tmp;
 
@@ -578,7 +578,7 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 
 	tmp = prodSpeed;
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
-	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
-	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
+	*rty_speed = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
+	*rty_speed = CLAMP(*rty_speed, inputMin, inputMax);
 }
 

@@ -23,10 +23,6 @@
 
 #include <stdint.h>
 
-#define BLDC_DMA 1
-#define MAIN_LOOP 2
-#define DEBUG_LED BLDC_DMA
-
 
 // Rx Structures USART
 typedef struct {

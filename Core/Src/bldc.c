@@ -27,6 +27,7 @@
 #include "config.h"
 #include "util.h"
 #include "main.h"
+#include "debug.h"
 
 // Matlab includes and defines - from auto-code generation
 // ###############################################################################
@@ -124,8 +125,7 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
 
-#define ENABLE_LOOP 1
-#if ENABLE_LOOP
+#if BLDC_ENABLE_LOOP
 
 	if (offsetcount < 1000) {  // calibrate ADC offsets
 		offsetcount++;

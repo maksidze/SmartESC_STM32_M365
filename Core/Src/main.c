@@ -30,6 +30,7 @@
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 #include "bldc.h"
+#include "debug.h"
 
 /* USER CODE END Includes */
 
@@ -134,11 +135,11 @@ typedef struct {
 	int16_t cmd1;
 	int16_t cmd2;
 	int16_t currDC;
-	int16_t speedL_meas;
+	int16_t speedMeas;
 	int16_t batVoltage;
 	int16_t boardTemp;
 	int16_t currPhA;
-	int16_t dummy;
+	int16_t speedMotor;
 	uint16_t checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
@@ -150,8 +151,18 @@ static int16_t steerRateFixdt; // local fixed-point variable for steering rate l
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
 static int32_t steerFixdt; // local fixed-point variable for steering low-pass filter
 static int32_t speedFixdt; // local fixed-point variable for speed low-pass filter
+
+static uint16_t speedBlend; // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
+
 static uint32_t main_loop_counter;
 volatile uint32_t timeoutCnt = 0; // Timeout counter for the General timeout (PPM, PWM, Nunchuck)
+
+int16_t speedMotor = 0;
+int16_t lastSpeedMotor = 0;
+
+int32_t board_temp_adcFixdt; // Fixed-point filter output initialized with current ADC converted to fixed-point
+int16_t board_temp_adcFilt;
+int16_t board_temp_deg_c;
 
 /* USER CODE END 0 */
 
@@ -228,12 +239,8 @@ int main(void) {
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 #endif
 
-	int16_t speedL = 0;
-	int16_t lastSpeedL = 0;
-
-	int32_t board_temp_adcFixdt = adc_buffer.temp << 16; // Fixed-point filter output initialized with current ADC converted to fixed-point
-	int16_t board_temp_adcFilt = adc_buffer.temp;
-	int16_t board_temp_deg_c;
+	board_temp_adcFixdt = adc_buffer.temp << 16; // Fixed-point filter output initialized with current ADC converted to fixed-point
+	board_temp_adcFilt = adc_buffer.temp;
 
 	/* USER CODE END 2 */
 
@@ -243,35 +250,27 @@ int main(void) {
 
 		HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
+#if TEST_READ_UART_COMMANDS
 		readCommand();                        // Read Command: cmd1, cmd2
+#endif
 
-#define LOOP_INC	    1000
-
-#define TEST_AUTOSTART 0
 #if TEST_AUTOSTART
 		if (main_loop_counter < LOOP_INC) {
-			cmd1 = main_loop_counter;
+			cmd2 = main_loop_counter;
 		} else {
-			cmd1 = LOOP_INC;
+			cmd2 = LOOP_INC;
 		}
 #endif
 
-#define TEST_LOOP 0
 #if TEST_LOOP
 
+		if (main_loop_counter % LOOP_INC < LOOP_INC / 3) {
+			cmd2++;
+		} else if (main_loop_counter % LOOP_INC < LOOP_INC * 2 / 3) {
 
-	    if (main_loop_counter % LOOP_INC < LOOP_INC / 3)
-	    {
-	    	cmd1++;
-	    }
-	    else if (main_loop_counter % LOOP_INC < LOOP_INC * 2 / 3)
-	    {
-
-	    }
-	    else
-	    {
-	    	cmd1--;
-	    }
+		} else {
+			cmd2--;
+		}
 #endif
 
 		calcAvgSpeed(); // Calculate average measured speed: speedAvg, speedAvgAbs
@@ -283,7 +282,6 @@ int main(void) {
 			enable = 1;                       // enable motors
 		}
 
-		uint16_t speedBlend; // Calculate speed Blend, a number between [0, 1] in fixdt(0,16,15)
 		speedBlend = (uint16_t) (((CLAMP(speedAvgAbs,10,60) - 10) << 15) / 50); // speedBlend [0,1] is within [10 rpm, 60rpm]
 
 #ifdef STANDSTILL_HOLD_ENABLE
@@ -297,13 +295,15 @@ int main(void) {
 
 #ifdef ELECTRIC_BRAKE_ENABLE
 	        electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
-	      #endif
+#endif
 
-		if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
+#if KX
+	    if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
 			cmd1 = (int16_t) ((cmd1 * speedBlend) >> 15);
 		} else {
 			cmd1 = (int16_t) ((-cmd1 * speedBlend) >> 15);
 		}
+#endif
 
 		// ####### LOW-PASS FILTER #######
 		rateLimiter16(cmd1, RATE, &steerRateFixdt);
@@ -313,14 +313,17 @@ int main(void) {
 		steer = (int16_t) (steerFixdt >> 16);  // convert fixed-point to integer
 		speed = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
 
+#if KX
 		speed = steer + speed; // Forward driving: in this case steer = Brake, speed = Throttle
+#endif
 
 		// ####### MIXER #######
-		mixerFcn(speed << 4, steer << 4, &speedL); // This function implements the equations above
+		mixerFcn(speed << 4, steer << 4, &speedMotor); // This function implements the equations above
 
 		// ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-		if (speedL > lastSpeedL - 100 && speedL < lastSpeedL + 100) {
-			pwm = speedL;
+		if (speedMotor > lastSpeedMotor - 100
+				&& speedMotor < lastSpeedMotor + 100) {
+			pwm = speedMotor;
 		}
 
 		// ####### CALC BOARD TEMPERATURE #######
@@ -336,24 +339,25 @@ int main(void) {
 			Feedback.cmd1 = (int16_t) cmd1;
 			Feedback.cmd2 = (int16_t) cmd2;
 			Feedback.currDC = (int16_t) analog.curr_dc;
-			Feedback.speedL_meas = (int16_t) - rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
+			Feedback.speedMeas = (int16_t) rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
 			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
 					/ BAT_CALIB_ADC);
 			Feedback.boardTemp = (int16_t) board_temp_deg_c;
 
 			//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
 			Feedback.currPhA = (int16_t) curr_a_cnt_max;
-			Feedback.dummy = (int16_t) 5;
+			Feedback.speedMotor = (int16_t) speedMotor;
 
 			Feedback.checksum = (uint16_t) (Feedback.start //
-			^ Feedback.cmd1 //
+			//
+					^ Feedback.cmd1 //
 					^ Feedback.cmd2 //
 					^ Feedback.currDC //
-					^ Feedback.speedL_meas //
+					^ Feedback.speedMeas //
 					^ Feedback.batVoltage //
 					^ Feedback.boardTemp //
 					^ Feedback.currPhA //
-					^ Feedback.dummy);
+					^ Feedback.speedMotor);
 
 			HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
 					sizeof(Feedback));
@@ -363,7 +367,6 @@ int main(void) {
 #if KX
 	    // ####### POWEROFF BY POWER-BUTTON #######
 	    poweroffPressCheck();
-
 	    // ####### BEEP AND EMERGENCY POWEROFF #######
 	    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
 	      poweroff();
@@ -392,7 +395,7 @@ int main(void) {
 
 
 	    // ####### INACTIVITY TIMEOUT #######
-	    if (abs(speedL) > 50 || abs(speedR) > 50) {
+	    if (abs(speedMotor) > 50 || abs(speedR) > 50) {
 	      inactivity_timeout_counter = 0;
 	    } else {
 	      inactivity_timeout_counter++;
@@ -407,7 +410,7 @@ int main(void) {
 #endif
 
 		// Update main loop states
-		lastSpeedL = speedL;
+		lastSpeedMotor = speedMotor;
 		main_loop_counter++;
 		timeoutCnt++;
 
