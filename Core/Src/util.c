@@ -63,8 +63,8 @@ uint16_t VirtAddVarTab[NB_OF_VAR] = { 0x1300, 1301, 1302, 1303, 1304, 1305,
 //------------------------------------------------------------------------
 // Local variables
 //------------------------------------------------------------------------
-static int16_t INPUT_MAX;             // [-] Input target maximum limitation
-static int16_t INPUT_MIN;             // [-] Input target minimum limitation
+static int16_t inputMax;             // [-] Input target maximum limitation
+static int16_t inputMin;             // [-] Input target minimum limitation
 
 static uint8_t cur_spd_valid = 0;
 static uint8_t inp_cal_valid = 0;
@@ -100,11 +100,11 @@ extern ExtY     rtY_Left;                      /* External outputs */
 
 void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 	if (rtP_Left.b_fieldWeakEna) {
-		INPUT_MAX = MAX(1000, FIELD_WEAK_HI);
-		INPUT_MIN = MIN(-1000, -FIELD_WEAK_HI);
+		inputMax = MAX(INPUT1_MAX, FIELD_WEAK_HI);
+		inputMin = MIN(-INPUT1_MIN, -FIELD_WEAK_HI);
 	} else {
-		INPUT_MAX = 1000;
-		INPUT_MIN = -1000;
+		inputMax = INPUT1_MAX;
+		inputMin = INPUT1_MIN;
 	}
 }
 
@@ -319,9 +319,9 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
     } else if (cmd2 >= -ELECTRIC_BRAKE_THRES && cmd2 < 0) {
       cmd2 = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + cmd2) * brakeVal) / ELECTRIC_BRAKE_THRES);
     } else if (cmd2 >= ELECTRIC_BRAKE_THRES) {
-      cmd2 = MAX(brakeVal, ((cmd2 - ELECTRIC_BRAKE_THRES) * INPUT_MAX) / (INPUT_MAX - ELECTRIC_BRAKE_THRES));
+      cmd2 = MAX(brakeVal, ((cmd2 - ELECTRIC_BRAKE_THRES) * inputMax) / (inputMax - ELECTRIC_BRAKE_THRES));
     } else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
-      cmd2 = MIN(brakeVal, ((cmd2 + ELECTRIC_BRAKE_THRES) * INPUT_MIN) / (INPUT_MIN + ELECTRIC_BRAKE_THRES));
+      cmd2 = MIN(brakeVal, ((cmd2 + ELECTRIC_BRAKE_THRES) * inputMin) / (inputMin + ELECTRIC_BRAKE_THRES));
     }
 #endif
 }
@@ -581,6 +581,6 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	tmp = prodSpeed;
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
 	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
-	*rty_speedL = CLAMP(*rty_speedL, INPUT_MIN, INPUT_MAX);
+	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
 }
 

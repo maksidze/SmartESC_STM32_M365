@@ -97,9 +97,7 @@ extern UART_HandleTypeDef huart3;
 // Matlab defines - from auto-code generation
 //---------------
 extern P rtP_Left; /* Block parameters (auto storage) */
-extern P rtP_Right; /* Block parameters (auto storage) */
 extern ExtY rtY_Left; /* External outputs */
-extern ExtY rtY_Right; /* External outputs */
 //---------------
 
 volatile adc_buf_t adc_buffer;
