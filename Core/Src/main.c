@@ -27,7 +27,6 @@
 #include "defines.h"
 #include "config.h"
 #include "util.h"
-#include "comms.h"
 #include "BLDC_controller.h"      /* BLDC's header file */
 #include "rtwtypes.h"
 
@@ -113,7 +112,6 @@ extern int16_t input2;                  // Non normalized input value
 
 extern int16_t speedAvg;                // Average measured speed
 extern int16_t speedAvgAbs;             // Average measured speed in absolute
-extern volatile uint32_t timeoutCnt; // Timeout counter for the General timeout (PPM, PWM, Nunchuck)
 extern uint8_t timeoutFlagADC; // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
 extern uint8_t timeoutFlagSerial; // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
@@ -126,8 +124,6 @@ extern int16_t batVoltage;              // global variable for battery voltage
 //------------------------------------------------------------------------
 // Global variables set here in main.c
 //------------------------------------------------------------------------
-uint8_t backwardDrive;
-volatile uint32_t main_loop_counter;
 
 //------------------------------------------------------------------------
 // Local variables
@@ -153,6 +149,8 @@ static int16_t steerRateFixdt; // local fixed-point variable for steering rate l
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
 static int32_t steerFixdt; // local fixed-point variable for steering low-pass filter
 static int32_t speedFixdt; // local fixed-point variable for speed low-pass filter
+static uint32_t main_loop_counter;
+volatile uint32_t timeoutCnt = 0; // Timeout counter for the General timeout (PPM, PWM, Nunchuck)
 
 /* USER CODE END 0 */
 
@@ -229,8 +227,8 @@ int main(void) {
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 #endif
 
-	int16_t speedL = 0, speedR = 0;
-	int16_t lastSpeedL = 0, lastSpeedR = 0;
+	int16_t speedL = 0;
+	int16_t lastSpeedL = 0;
 
 	int32_t board_temp_adcFixdt = adc_buffer.temp << 16; // Fixed-point filter output initialized with current ADC converted to fixed-point
 	int16_t board_temp_adcFilt = adc_buffer.temp;
@@ -286,6 +284,21 @@ int main(void) {
 
 		HAL_Delay(DELAY_IN_MAIN_LOOP);        //delay in ms
 
+
+		////////////////////////////////////////////
+		////////////////////////////////////////////
+		////////////////////////////////////////////
+
+
+#define AUTOSTART 0
+#if AUTOSTART
+		if (main_loop_counter < LOOP_INC) {
+			cmd1 = main_loop_counter;
+		} else {
+			cmd1 = LOOP_INC;
+		}
+#endif
+
 #define LOOP_INC	    1000
 #if TEST_LOOP
 
@@ -303,6 +316,9 @@ int main(void) {
 	    	cmd1--;
 	    }
 
+		////////////////////////////////////////////
+		////////////////////////////////////////////
+		////////////////////////////////////////////
 #else
 
 		readCommand();                        // Read Command: cmd1, cmd2
@@ -313,10 +329,6 @@ int main(void) {
 
 		// ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
 		if (enable == 0 && (!rtY_Left.z_errCode) && (cmd1 > -50 && cmd1 < 50)) {
-#if KX
-	  	    beepShort(6);                     // make 2 beeps indicating the motor enable
-	        beepShort(4); HAL_Delay(100);
-#endif
 			steerFixdt = speedFixdt = 0;      // reset filters
 			enable = 1;                       // enable motors
 		}
@@ -356,24 +368,8 @@ int main(void) {
 		// ####### MIXER #######
 		mixerFcn(speed << 4, steer << 4, &speedL); // This function implements the equations above
 
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-#define AUTOSTART 0
-#if AUTOSTART
-		if (main_loop_counter < LOOP_INC) {
-			speedL = main_loop_counter;
-		} else {
-			speedL = LOOP_INC;
-		}
-#endif
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-		////////////////////////////////////////////
-
 		// ####### SET OUTPUTS (if the target change is less than +/- 100) #######
-		if ((speedL > lastSpeedL - 100 && speedL < lastSpeedL + 100)
-				&& (speedR > lastSpeedR - 100 && speedR < lastSpeedR + 100)) {
+		if (speedL > lastSpeedL - 100 && speedL < lastSpeedL + 100) {
 			pwml = speedL;
 		}
 
@@ -452,7 +448,6 @@ int main(void) {
 		// HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
 		// Update main loop states
 		lastSpeedL = speedL;
-		lastSpeedR = speedR;
 		main_loop_counter++;
 		timeoutCnt++;
 
