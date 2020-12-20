@@ -159,6 +159,7 @@ typedef struct {
   int16_t curr_c_cnt;
 
   int32_t curr_dc;
+  int16_t curr_dc_raw;
 } analog_t;
 
 extern analog_t analog;
@@ -166,24 +167,6 @@ extern analog_t analog;
 
 //#define PHASE_CURR_mA_CNT 50 //mA per bit
 #define DC_VOLT_uV_CNT 14431 //uV per bit
-
-
-// Define I2C, Nunchuk, PPM, PWM functions
-void PPM_Init(void);
-void PPM_ISR_Callback(void);
-void PWM_Init(void);
-void PWM_ISR_CH1_Callback(void);
-void PWM_ISR_CH2_Callback(void);
-
-// Sideboard definitions
-#define LED1_SET            (0x01)
-#define LED2_SET            (0x02)
-#define LED3_SET            (0x04)
-#define LED4_SET            (0x08)
-#define LED5_SET            (0x10)
-#define SENSOR1_SET         (0x01)
-#define SENSOR2_SET         (0x02)
-#define SENSOR_MPU          (0x04)
 
 
 #endif // DEFINES_H

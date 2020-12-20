@@ -97,7 +97,7 @@ extern UART_HandleTypeDef huart3;
 // Matlab defines - from auto-code generation
 //---------------
 extern P rtP_Left; /* Block parameters (auto storage) */
-extern ExtY rtY_Left; /* External outputs */
+extern ExtY rtY_Motor; /* External outputs */
 //---------------
 
 volatile adc_buf_t adc_buffer;
@@ -112,7 +112,7 @@ extern int16_t speedAvgAbs;             // Average measured speed in absolute
 extern uint8_t timeoutFlagADC; // Timeout Flag for for ADC Protection: 0 = OK, 1 = Problem detected (line disconnected or wrong ADC data)
 extern uint8_t timeoutFlagSerial; // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
-extern volatile int pwml;         // global variable for pwm left. -1000 to 1000
+extern volatile int pwm;         // global variable for pwm left. -1000 to 1000
 
 extern uint8_t enable;                  // global variable for motor enable
 
@@ -277,7 +277,7 @@ int main(void) {
 		calcAvgSpeed(); // Calculate average measured speed: speedAvg, speedAvgAbs
 
 		// ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-		if (enable == 0 && (!rtY_Left.z_errCode) && (cmd1 > -50 && cmd1 < 50)) {
+		if (enable == 0 && (!rtY_Motor.z_errCode) && (cmd1 > -50 && cmd1 < 50)) {
 			steerFixdt = speedFixdt = 0;      // reset filters
 			enable = 1;                       // enable motors
 		}
@@ -319,7 +319,7 @@ int main(void) {
 
 		// ####### SET OUTPUTS (if the target change is less than +/- 100) #######
 		if (speedL > lastSpeedL - 100 && speedL < lastSpeedL + 100) {
-			pwml = speedL;
+			pwm = speedL;
 		}
 
 		// ####### CALC BOARD TEMPERATURE #######
@@ -335,13 +335,13 @@ int main(void) {
 			Feedback.cmd1 = (int16_t) cmd1;
 			Feedback.cmd2 = (int16_t) cmd2;
 			Feedback.currDC = (int16_t) analog.curr_dc;
-			Feedback.speedL_meas = (int16_t) rtY_Left.n_mot;
+			Feedback.speedL_meas = (int16_t) rtY_Motor.n_mot;
 			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
 					/ BAT_CALIB_ADC);
 			Feedback.boardTemp = (int16_t) board_temp_deg_c;
 
 			//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-			Feedback.currPhA = 0;
+			Feedback.currPhA = (int16_t) curr_a_cnt_max;
 			Feedback.dummy = (int16_t) 5;
 
 			Feedback.checksum = (uint16_t) (Feedback.start //
@@ -366,7 +366,7 @@ int main(void) {
 	    // ####### BEEP AND EMERGENCY POWEROFF #######
 	    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
 	      poweroff();
-	    } else if (rtY_Left.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
+	    } else if (rtY_Motor.z_errCode || rtY_Right.z_errCode) {                                           // 1 beep (low pitch): Motor error, disable motors
 	      enable = 0;
 	      beepCount(1, 24, 1);
 	    } else if (timeoutFlagADC) {                                                                      // 2 beeps (low pitch): ADC timeout

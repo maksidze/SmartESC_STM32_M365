@@ -86,13 +86,11 @@ static uint8_t standstillAcv = 0;
 
 // Matlab defines - from auto-code generation
 //---------------
-//RT_MODEL rtM_Left_;                     /* Real-time model */
-extern RT_MODEL *const rtM_Left;
-
+extern RT_MODEL *const rtM_Motor;
 extern P rtP_Left;                      /* Block parameters (auto storage) */
-extern DW       rtDW_Left;                     /* Observable states */
-extern ExtU     rtU_Left;                      /* External inputs */
-extern ExtY     rtY_Left;                      /* External outputs */
+extern DW       rtDW_Motor;                     /* Observable states */
+extern ExtU     rtU_Motor;                      /* External inputs */
+extern ExtY     rtY_Motor;                      /* External outputs */
 
 
 /* =========================== Initialization Functions =========================== */
@@ -149,7 +147,7 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart) {
 
 void calcAvgSpeed(void) {
 	// Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-	speedAvg = rtY_Left.n_mot;
+	speedAvg = rtY_Motor.n_mot;
 
 	// Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
 	if (SPEED_COEFFICIENT & (1 << 16)) {
@@ -336,7 +334,7 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
 void cruiseControl(uint8_t button) {
 #ifdef CRUISE_CONTROL_SUPPORT
 	if (button && !rtP_Left.b_cruiseCtrlEna) {       // Cruise control activated
-		rtP_Left.n_cruiseMotTgt = rtY_Left.n_mot;
+		rtP_Left.n_cruiseMotTgt = rtY_Motor.n_mot;
 		rtP_Left.b_cruiseCtrlEna = 1;
 		cruiseCtrlAcv = 1;
 	} else if (button && rtP_Left.b_cruiseCtrlEna && !standstillAcv) { // Cruise control deactivated if no Standstill Hold is active

@@ -33,19 +33,12 @@
 #include "BLDC_controller.h"           /* Model's header file */
 #include "rtwtypes.h"
 
-extern RT_MODEL *const rtM_Left;
-
-extern DW rtDW_Left; /* Observable states */
-extern ExtU rtU_Left; /* External inputs */
-extern ExtY rtY_Left; /* External outputs */
-
-RT_MODEL rtM_Left_; /* Real-time model */
-RT_MODEL *const rtM_Left = &rtM_Left_;
-
+RT_MODEL rtM_Motor_; /* Real-time model */
+RT_MODEL *const rtM_Motor = &rtM_Motor_;
 extern P rtP_Left; /* Block parameters (auto storage) */
-DW rtDW_Left; /* Observable states */
-ExtU rtU_Left; /* External inputs */
-ExtY rtY_Left; /* External outputs */
+DW rtDW_Motor; /* Observable states */
+ExtU rtU_Motor; /* External inputs */
+ExtY rtY_Motor; /* External outputs */
 
 int16_t curr_a_cnt_max = 0;
 
@@ -62,9 +55,8 @@ analog_t analog;
 
 extern uint8_t ctrlModReq;
 int32_t curDC_max = I_DC_MAX * 1000; //(I_DC_MAX * A2BIT_CONV);
-int32_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 
-volatile int pwml = 0;
+volatile int pwm = 0;
 volatile int pwmr = 0;
 
 extern volatile adc_buf_t adc_buffer;
@@ -108,13 +100,13 @@ void BLDC_Init(void) {
 	rtP_Left.r_fieldWeakLo = FIELD_WEAK_LO << 4;                // fixdt(1,16,4)
 
 	/* Pack LEFT motor data into RTM */
-	rtM_Left->defaultParam = &rtP_Left;
-	rtM_Left->dwork = &rtDW_Left;
-	rtM_Left->inputs = &rtU_Left;
-	rtM_Left->outputs = &rtY_Left;
+	rtM_Motor->defaultParam = &rtP_Left;
+	rtM_Motor->dwork = &rtDW_Motor;
+	rtM_Motor->inputs = &rtU_Motor;
+	rtM_Motor->outputs = &rtY_Motor;
 
 	/* Initialize BLDC controllers */
-	BLDC_controller_initialize(rtM_Left);
+	BLDC_controller_initialize(rtM_Motor);
 }
 
 // =================================
@@ -155,8 +147,8 @@ void DMA1_Channel1_IRQHandler(void) {
 					+ ABS(analog.curr_c_cnt)) / 3, 20, &filter_buffer);
 
 	// curr_dc in mA
-	analog.curr_dc = (filter_buffer >> 16) * A2BIT_CONV;
-	curL_DC = analog.curr_dc;
+	analog.curr_dc_raw = (filter_buffer >> 16);
+	analog.curr_dc = analog.curr_dc_raw * A2BIT_CONV;
 
 	// store max phase A current (raw data)
 	if (analog.curr_a_cnt > curr_a_cnt_max)
@@ -173,11 +165,13 @@ void DMA1_Channel1_IRQHandler(void) {
 	// This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
 	// curDC_max in A
 	// curL_DC in mA
-	if ((ABS(curL_DC) > (curDC_max)) || enable == 0) {
+/*
+	if ((ABS(analog.curr_dc) > (curDC_max)) || enable == 0) {
 		LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
 	} else {
 		LEFT_TIM->BDTR |= TIM_BDTR_MOE;
 	}
+*/
 
 	// ############################### MOTOR CONTROL ###############################
 
@@ -191,7 +185,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	OverrunFlag = true;
 
 	/* Make sure to stop BOTH motors in case of an error */
-	enableFin = enable && !rtY_Left.z_errCode;
+	enableFin = enable && !rtY_Motor.z_errCode;
 
 	// ========================= LEFT MOTOR ============================
 	// Get hall sensors values
@@ -200,28 +194,27 @@ void DMA1_Channel1_IRQHandler(void) {
 	uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
 
 	/* Set motor inputs here */
-	rtU_Left.b_motEna = enableFin;
-	rtU_Left.z_ctrlModReq = ctrlModReq;
-	rtU_Left.r_inpTgt = pwml;
-	rtU_Left.b_hallA = hall_ul;
-	rtU_Left.b_hallB = hall_vl;
-	rtU_Left.b_hallC = hall_wl;
-	rtU_Left.i_phaAB = analog.curr_a_cnt;
-	rtU_Left.i_phaBC = analog.curr_b_cnt;
-	rtU_Left.i_DCLink = analog.curr_dc;
+	rtU_Motor.b_motEna = enableFin;
+	rtU_Motor.z_ctrlModReq = ctrlModReq;
+	rtU_Motor.r_inpTgt = pwm;
+	rtU_Motor.b_hallA = hall_ul;
+	rtU_Motor.b_hallB = hall_vl;
+	rtU_Motor.b_hallC = hall_wl;
+	rtU_Motor.i_phaAB = analog.curr_a_cnt;
+	rtU_Motor.i_phaBC = analog.curr_b_cnt;
 	// rtU_Left.a_mechAngle   = ...; // Angle input in DEGREES [0,360] in fixdt(1,16,4) data type. If `angle` is float use `= (int16_t)floor(angle * 16.0F)` If `angle` is integer use `= (int16_t)(angle << 4)`
 
 	/* Step the controller */
 #ifdef MOTOR_LEFT_ENA
-	BLDC_controller_step(rtM_Left);
+	BLDC_controller_step(rtM_Motor);
 #endif
 
 	/* Get motor outputs here */
-	ul = rtY_Left.DC_phaA;
-	vl = rtY_Left.DC_phaB;
-	wl = rtY_Left.DC_phaC;
-	errCodeLeft = rtY_Left.z_errCode;
-	motSpeedLeft = rtY_Left.n_mot;
+	ul = rtY_Motor.DC_phaA;
+	vl = rtY_Motor.DC_phaB;
+	wl = rtY_Motor.DC_phaC;
+	errCodeLeft = rtY_Motor.z_errCode;
+	motSpeedLeft = rtY_Motor.n_mot;
 	// motAngleLeft = rtY_Left.a_elecAngle;
 
 	/* Apply commands */
