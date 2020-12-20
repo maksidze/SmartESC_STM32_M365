@@ -92,8 +92,6 @@ extern TIM_HandleTypeDef htim_left;
 extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
-extern volatile adc_buf_t adc_buffer;
-
 extern UART_HandleTypeDef huart3;
 
 // Matlab defines - from auto-code generation
@@ -103,6 +101,8 @@ extern P rtP_Right; /* Block parameters (auto storage) */
 extern ExtY rtY_Left; /* External outputs */
 extern ExtY rtY_Right; /* External outputs */
 //---------------
+
+volatile adc_buf_t adc_buffer;
 
 extern int16_t cmd1;                    // normalized input value. -1000 to 1000
 extern int16_t cmd2;                    // normalized input value. -1000 to 1000

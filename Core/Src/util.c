@@ -27,7 +27,6 @@
 #include "util.h"
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
-#include "setup.h"
 
 /* =========================== Variable Definitions =========================== */
 
@@ -110,7 +109,7 @@ void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 }
 
 void Input_Init(void) {
-	UART3_Init();
+
 	HAL_UART_Receive_DMA(&huart3, (uint8_t*) rx_buffer_R, sizeof(rx_buffer_R));
 	UART_DisableRxErrors(&huart3);
 
