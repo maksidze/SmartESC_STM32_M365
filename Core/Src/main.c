@@ -277,7 +277,8 @@ int main(void) {
 		calcAvgSpeed(); // Calculate average measured speed: speedAvg, speedAvgAbs
 
 		// ####### MOTOR ENABLING: Only if the initial input is very small (for SAFETY) #######
-		if (enable == 0 && (!rtY_Motor.z_errCode) && (cmd1 > -50 && cmd1 < 50)) {
+		if (enable == 0 && (!rtY_Motor.z_errCode)
+				&& (cmd1 > -50 && cmd1 < 50)) {
 			steerFixdt = speedFixdt = 0;      // reset filters
 			enable = 1;                       // enable motors
 		}
@@ -401,14 +402,16 @@ int main(void) {
 	    }
 #endif
 
-		// HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
+#if DEBUG_LED == MAIN_LOOP
+		HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
+#endif
+
 		// Update main loop states
 		lastSpeedL = speedL;
 		main_loop_counter++;
 		timeoutCnt++;
 
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,
-				(main_loop_counter % 400 > 200));
+		//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,				(main_loop_counter % 400 > 200));
 
 		/* USER CODE END WHILE */
 

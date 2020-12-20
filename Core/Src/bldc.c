@@ -42,6 +42,8 @@ ExtY rtY_Motor; /* External outputs */
 
 int16_t curr_a_cnt_max = 0;
 
+uint32_t counter = 0;
+
 // ###############################################################################
 
 #if KX
@@ -115,7 +117,11 @@ void BLDC_Init(void) {
 void DMA1_Channel1_IRQHandler(void) {
 
 	DMA1->IFCR = DMA_IFCR_CTCIF1;
-	// HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+
+#if DEBUG_LED == BLDC_DMA
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
+#endif
+
 	// HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
 
 #define ENABLE_LOOP 1
@@ -227,6 +233,11 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// =================================================================
 
+#if DEBUG_LED == BLDC_DMA
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
+#endif
+
+	counter++;
 	/* Indicate task complete */
 	OverrunFlag = false;
 
