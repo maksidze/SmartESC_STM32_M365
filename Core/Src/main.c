@@ -31,8 +31,6 @@
 #include "rtwtypes.h"
 #include "bldc.h"
 
-#define TEST_LOOP 0
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -247,8 +245,8 @@ int main(void) {
 
 #define LOOP_INC	    1000
 
-#define AUTOSTART 0
-#if AUTOSTART
+#define TEST_AUTOSTART 0
+#if TEST_AUTOSTART
 		if (main_loop_counter < LOOP_INC) {
 			cmd1 = main_loop_counter;
 		} else {
@@ -256,7 +254,7 @@ int main(void) {
 		}
 #endif
 
-#define DEFINE_LOOP 0
+#define TEST_LOOP 0
 #if TEST_LOOP
 
 
