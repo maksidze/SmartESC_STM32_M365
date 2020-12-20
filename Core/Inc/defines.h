@@ -82,7 +82,7 @@
 
 
 
-#define PHASE_CURR_mA_CNT 50 //mA per bit
+//#define PHASE_CURR_mA_CNT 50 //mA per bit
 #define DC_VOLT_uV_CNT 14431 //uV per bit
 
 #define DELAY_TIM_FREQUENCY_US 1000000
@@ -164,7 +164,7 @@ typedef struct {
 extern analog_t analog;
 
 
-#define PHASE_CURR_mA_CNT 50 //mA per bit
+//#define PHASE_CURR_mA_CNT 50 //mA per bit
 #define DC_VOLT_uV_CNT 14431 //uV per bit
 
 

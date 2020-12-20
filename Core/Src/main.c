@@ -118,6 +118,9 @@ extern uint8_t enable;                  // global variable for motor enable
 
 extern int16_t batVoltage;              // global variable for battery voltage
 
+extern analog_t analog;
+extern int16_t curr_a_cnt_max;
+
 //------------------------------------------------------------------------
 // Global variables set here in main.c
 //------------------------------------------------------------------------
@@ -130,11 +133,12 @@ typedef struct {
 	uint16_t start;
 	int16_t cmd1;
 	int16_t cmd2;
-	int16_t dummy;
+	int16_t currDC;
 	int16_t speedL_meas;
 	int16_t batVoltage;
 	int16_t boardTemp;
-	uint16_t dummy2;
+	int16_t currPhA;
+	int16_t dummy;
 	uint16_t checksum;
 } SerialFeedback;
 static SerialFeedback Feedback;
@@ -330,22 +334,29 @@ int main(void) {
 			Feedback.start = (uint16_t) SERIAL_START_FRAME;
 			Feedback.cmd1 = (int16_t) cmd1;
 			Feedback.cmd2 = (int16_t) cmd2;
-			Feedback.dummy = (int16_t) 0;
+			Feedback.currDC = (int16_t) analog.curr_dc;
 			Feedback.speedL_meas = (int16_t) rtY_Left.n_mot;
 			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
 					/ BAT_CALIB_ADC);
 			Feedback.boardTemp = (int16_t) board_temp_deg_c;
 
-			if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-				Feedback.dummy2 = (uint16_t) 0;
-				Feedback.checksum = (uint16_t) (Feedback.start ^ Feedback.cmd1
-						^ Feedback.cmd2 ^ Feedback.dummy ^ Feedback.speedL_meas
-						^ Feedback.batVoltage ^ Feedback.boardTemp
-						^ Feedback.dummy2);
+			//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+			Feedback.currPhA = 0;
+			Feedback.dummy = (int16_t) 5;
 
-				HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
-						sizeof(Feedback));
-			}
+			Feedback.checksum = (uint16_t) (Feedback.start //
+			^ Feedback.cmd1 //
+					^ Feedback.cmd2 //
+					^ Feedback.currDC //
+					^ Feedback.speedL_meas //
+					^ Feedback.batVoltage //
+					^ Feedback.boardTemp //
+					^ Feedback.currPhA //
+					^ Feedback.dummy);
+
+			HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
+					sizeof(Feedback));
+			//}
 		}
 
 #if KX
