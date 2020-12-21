@@ -129,21 +129,8 @@ extern int16_t curr_a_cnt_max;
 //------------------------------------------------------------------------
 // Local variables
 //------------------------------------------------------------------------
-#if defined(FEEDBACK_SERIAL_USART2) || defined(FEEDBACK_SERIAL_USART3)
-typedef struct {
-	uint16_t start;
-	int16_t cmd1;
-	int16_t cmd2;
-	int16_t currDC;
-	int16_t speedMeas;
-	int16_t batVoltage;
-	int16_t boardTemp;
-	int16_t currPhA;
-	int16_t speedMotor;
-	uint16_t checksum;
-} SerialFeedback;
-static SerialFeedback Feedback;
-#endif
+
+static SerialFromEscToDisplay Feedback;
 
 static int16_t speed;                // local variable for speed. -1000 to 1000
 static int16_t steer;              // local variable for steering. -1000 to 1000

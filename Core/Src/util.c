@@ -75,8 +75,8 @@ static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 static uint16_t timeoutCntSerial_R = 0; // Timeout counter for Rx Serial command
 static uint8_t timeoutFlagSerial_R = 0; // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
-static SerialCommand command;
-static SerialCommand command_raw;
+static SerialFromDisplayToEsc command;
+static SerialFromDisplayToEsc command_raw;
 static uint32_t command_len = sizeof(command);
 
 static uint8_t brakePressed;
@@ -502,8 +502,8 @@ void usart3_rx_check(void) {
  * Process command Rx data
  * - if the command_in data is valid (correct START_FRAME and checksum) copy the command_in to command_out
  */
-void usart_process_command(SerialCommand *command_in,
-		SerialCommand *command_out, uint8_t usart_idx) {
+void usart_process_command(SerialFromDisplayToEsc *command_in,
+		SerialFromDisplayToEsc *command_out, uint8_t usart_idx) {
 
 	uint16_t checksum;
 	if (command_in->start == SERIAL_START_FRAME) {

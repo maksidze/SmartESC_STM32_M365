@@ -24,13 +24,27 @@
 #include <stdint.h>
 
 
-// Rx Structures USART
+// Rx Structure USART
 typedef struct {
 	uint16_t start;
 	int16_t steer;
 	int16_t speed;
 	uint16_t checksum;
-} SerialCommand;
+} SerialFromDisplayToEsc;
+
+// Tx Struture USART
+typedef struct {
+	uint16_t start;
+	int16_t cmd1;
+	int16_t cmd2;
+	int16_t currDC;
+	int16_t speedMeas;
+	int16_t batVoltage;
+	int16_t boardTemp;
+	int16_t currPhA;
+	int16_t speedMotor;
+	uint16_t checksum;
+} SerialFromEscToDisplay;
 
 // Initialization Functions
 void Input_Lim_Init(void);
@@ -57,8 +71,8 @@ void poweroffPressCheck(void);
 void readInput(void);
 void readCommand(void);
 void usart3_rx_check(void);
-void usart_process_command(SerialCommand *command_in,
-		SerialCommand *command_out, uint8_t usart_idx);
+void usart_process_command(SerialFromDisplayToEsc *command_in,
+		SerialFromDisplayToEsc *command_out, uint8_t usart_idx);
 
 // Filtering Functions
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
