@@ -57,7 +57,6 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
 - [ ] Communicate with BMS
   - [ ] Half-duplex
   - [ ] Full-duplex
-- [ ] Store datas in flash
 
 
 ## Controller schematics 
