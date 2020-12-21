@@ -53,16 +53,65 @@ typedef struct {
 
 // Tx Struture USART
 typedef struct {
-	uint16_t start;
-	int16_t cmd1;
-	int16_t cmd2;
-	int16_t currDC;
-	int16_t speedMeas;
-	int16_t batVoltage;
-	int16_t boardTemp;
-	int16_t currPhA;
-	int16_t speedMotor;
-	uint16_t checksum;
+	uint8_t Frame_start                                  ;
+	uint8_t Type                                         ;
+	uint8_t ESC_Version_Maj                              ;
+	uint8_t ESC_Version_Min                              ;
+	uint8_t Throttle                                     ;
+	uint8_t Brake                                        ;
+	uint8_t Controller_Voltage_LSB                       ;
+	uint8_t Controller_Voltage_MSB                       ;
+	uint8_t Controller_Current_LSB                       ;
+	uint8_t Controller_Current_MSB                       ;
+	uint8_t MOSFET_temperature                           ;
+	uint8_t ERPM_LSB                                     ;
+	uint8_t ERPM_MSB                                     ;
+	uint8_t Lock_status                                  ;
+	uint8_t Ligth_status                                 ;
+	uint8_t Regulator_status                             ;
+	uint8_t Phase_1_current_max_LSB                      ;
+	uint8_t Phase_1_current_max_MSB                      ;
+	uint8_t Phase_1_voltage_max_LSB                      ;
+	uint8_t Phase_1_voltage_max_MSB                      ;
+	uint8_t BMS_Version_Maj                              ;
+	uint8_t BMS_Version_Min                              ;
+	uint8_t BMS_voltage_LSB                              ;
+	uint8_t BMS_voltage_MSB                              ;
+	uint8_t BMS_Current_LSB                              ;
+	uint8_t BMS_Current_MSB                              ;
+	uint8_t BMS_Cells_status_group_1                     ;
+	uint8_t BMS_Cells_status_group_2                     ;
+	uint8_t BMS_Cells_status_group_3                    ;
+	uint8_t BMS_Cells_status_group_4                     ;
+	uint8_t BMS_Cells_status_group_5                     ;
+	uint8_t BMS_Cells_status_group_6                     ;
+	uint8_t BMS_Cells_status_group_7                     ;
+	uint8_t BMS_Cells_status_group_8                     ;
+	uint8_t BMS_Cells_status_group_9                     ;
+	uint8_t BMS_Cells_status_group_10                    ;
+	uint8_t BMS_Cells_status_group_11                    ;
+	uint8_t BMS_Cells_status_group_12                    ;
+	uint8_t BMS_Cells_status_group_13                    ;
+	uint8_t BMS_Cells_status_group_14                    ;
+	uint8_t BMS_Cells_status_group_15                    ;
+	uint8_t BMS_Cells_status_group_16                    ;
+	uint8_t BMS_Cells_status_group_17                    ;
+	uint8_t BMS_Cells_status_group_18                    ;
+	uint8_t BMS_Cells_status_group_19                    ;
+	uint8_t BMS_Cells_status_group_20                    ;
+	uint8_t BMS_Cells_status_group_21                    ;
+	uint8_t BMS_Cells_status_group_22                    ;
+	uint8_t BMS_Cells_status_group_23                    ;
+	uint8_t BMS_Cells_status_group_24                    ;
+	uint8_t BMS_Battery_tempature_1                      ;
+	uint8_t BMS_Battery_tempature_2                      ;
+	uint8_t BMS_Charge_cycles_full_LSB                   ;
+	uint8_t BMS_Charge_cycles_full_MSB                   ;
+	uint8_t BMS_Charge_cycles_partial_LSB                ;
+	uint8_t BMS_Charge_cycles_partial_MSB                ;
+	uint8_t Errors_LSB                                   ;
+	uint8_t Errors_MSB                                   ;
+	uint8_t CRC8                                         ;
 } SerialFromEscToDisplay;
 
 // Initialization Functions
@@ -92,6 +141,7 @@ void readCommand(void);
 void usart3_rx_check(void);
 void usart_process_command(SerialFromDisplayToEsc *command_in,
 		SerialFromDisplayToEsc *command_out, uint8_t usart_idx);
+void usart_send_from_esc_to_display();
 
 // Filtering Functions
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);

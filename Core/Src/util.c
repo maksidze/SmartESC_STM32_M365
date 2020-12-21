@@ -510,29 +510,29 @@ void usart_process_command(SerialFromDisplayToEsc *command_in,
 	uint8_t checksum;
 	if (command_in->Frame_start == SERIAL_START_FRAME_DISPLAY_TO_ESC) {
 		checksum = (uint16_t) (command_in->Frame_start //
-				//
-				^ command_in-> Type                        //
-				^ command_in-> Destination                 //
-				^ command_in-> Number_of_ESC               //
-				^ command_in-> BMS_protocol                //
-				^ command_in-> ESC_Jumps                   //
-				^ command_in-> Display_Version_Maj         //
-				^ command_in-> Display_Version_Main        //
-				^ command_in-> Power_ON                    //
-				^ command_in-> Throttle                    //
-				^ command_in-> Brake                       //
-				^ command_in-> Torque                      //
-				^ command_in-> Brake_torque                //
-				^ command_in-> Lock                        //
-				^ command_in-> Regulator                   //
-				^ command_in-> Motor_direction             //
-				^ command_in-> Hall_sensors_direction      //
-				^ command_in-> Ligth_power                 //
-				^ command_in-> Max_temperature_reduce      //
-				^ command_in-> Max_temperature_shutdown    //
-				^ command_in-> Speed_limit_                //
-				^ command_in-> Motor_start_speed           //
-				);
+		//
+				^ command_in->Type                        //
+				^ command_in->Destination                 //
+				^ command_in->Number_of_ESC               //
+				^ command_in->BMS_protocol                //
+				^ command_in->ESC_Jumps                   //
+				^ command_in->Display_Version_Maj         //
+				^ command_in->Display_Version_Main        //
+				^ command_in->Power_ON                    //
+				^ command_in->Throttle                    //
+				^ command_in->Brake                       //
+				^ command_in->Torque                      //
+				^ command_in->Brake_torque                //
+				^ command_in->Lock                        //
+				^ command_in->Regulator                   //
+				^ command_in->Motor_direction             //
+				^ command_in->Hall_sensors_direction      //
+				^ command_in->Ligth_power                 //
+				^ command_in->Max_temperature_reduce      //
+				^ command_in->Max_temperature_shutdown    //
+				^ command_in->Speed_limit_                //
+				^ command_in->Motor_start_speed           //
+		);
 		if (command_in->CRC8 == checksum) {
 			*command_out = *command_in;
 			if (usart_idx == 3) {      // Sideboard USART3
@@ -544,29 +544,114 @@ void usart_process_command(SerialFromDisplayToEsc *command_in,
 }
 
 void usart_send_from_esc_to_display() {
-	feedback.start = (uint16_t) SERIAL_START_FRAME_ESC_TO_DISPLAY;
-	feedback.cmd1 = (int16_t) cmd1;
-	feedback.cmd2 = (int16_t) cmd2;
-	feedback.currDC = (int16_t) analog.curr_dc;
-	feedback.speedMeas = (int16_t) rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
-	feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
-			/ BAT_CALIB_ADC);
-	feedback.boardTemp = (int16_t) board_temp_deg_c;
+	/*
+	 feedback.start = (uint16_t) SERIAL_START_FRAME_ESC_TO_DISPLAY;
+	 feedback.cmd1 = (int16_t) cmd1;
+	 feedback.cmd2 = (int16_t) cmd2;
+	 feedback.currDC = (int16_t) analog.curr_dc;
+	 feedback.speedMeas = (int16_t) rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
+	 feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
+	 / BAT_CALIB_ADC);
+	 feedback.boardTemp = (int16_t) board_temp_deg_c;
+	 feedback.currPhA = (int16_t) curr_a_cnt_max;
+	 feedback.speedMotor = (int16_t) speedMotor;
+	 */
+
+	int16_t batVoltageMillivolts = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
+		 / BAT_CALIB_ADC);
+	uint16_t rpm = rtY_Motor.n_mot * 2;
+
+	feedback.Frame_start = (uint16_t) SERIAL_START_FRAME_ESC_TO_DISPLAY;
+	feedback.Type = 0x01;
+	feedback.ESC_Version_Maj = 0x00;
+	feedback.ESC_Version_Min = 0x01;
+	feedback.Throttle = cmd1 >> 2;
+	feedback.Brake = cmd2 >> 2;
+	feedback.Controller_Voltage_LSB = batVoltageMillivolts  & 0xff;
+	feedback.Controller_Voltage_MSB = (batVoltageMillivolts >> 8) & 0xff;
+	//feedback.Controller_Current_LSB                       ;
+	//feedback.Controller_Current_MSB                       ;
+	feedback.MOSFET_temperature = board_temp_deg_c;
+	feedback.ERPM_LSB = rpm & 0xff;
+	feedback.ERPM_MSB = (rpm >> 8) & 0xff;
+	;
+	//feedback.Lock_status                                  ;
+	//feedback.Ligth_status                                 ;
+	//feedback.Regulator_status                             ;
+	//feedback.Phase_1_current_max_LSB                      ;
+	//feedback.Phase_1_current_max_MSB                      ;
+	//feedback.Phase_1_voltage_max_LSB                      ;
+	//feedback.Phase_1_voltage_max_MSB                      ;
+	//feedback.BMS_Version_Maj                              ;
+	//feedback.BMS_Version_Min                              ;
+	//feedback.BMS_voltage_LSB                              ;
+	//feedback.BMS_voltage_MSB                              ;
+	//feedback.BMS_Current_LSB                              ;
+	//feedback.BMS_Current_MSB                              ;
 
 	//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-	feedback.currPhA = (int16_t) curr_a_cnt_max;
-	feedback.speedMotor = (int16_t) speedMotor;
 
-	feedback.checksum = (uint16_t) (feedback.start //
+	feedback.CRC8 = (uint8_t) (
 	//
-			^ feedback.cmd1 //
-			^ feedback.cmd2 //
-			^ feedback.currDC //
-			^ feedback.speedMeas //
-			^ feedback.batVoltage //
-			^ feedback.boardTemp //
-			^ feedback.currPhA //
-			^ feedback.speedMotor);
+			feedback.Frame_start//
+			^ feedback.Type//
+			^ feedback.ESC_Version_Maj//
+			^ feedback.ESC_Version_Min//
+			^ feedback.Throttle//
+			^ feedback.Brake//
+			^ feedback.Controller_Voltage_LSB//
+			^ feedback.Controller_Voltage_MSB//
+			^ feedback.Controller_Current_LSB//
+			^ feedback.Controller_Current_MSB//
+			^ feedback.MOSFET_temperature//
+			^ feedback.ERPM_LSB//
+			^ feedback.ERPM_MSB//
+			^ feedback.Lock_status//
+			^ feedback.Ligth_status//
+			^ feedback.Regulator_status//
+			^ feedback.Phase_1_current_max_LSB//
+			^ feedback.Phase_1_current_max_MSB//
+			^ feedback.Phase_1_voltage_max_LSB//
+			^ feedback.Phase_1_voltage_max_MSB//
+			^ feedback.BMS_Version_Maj//
+			^ feedback.BMS_Version_Min//
+			^ feedback.BMS_voltage_LSB//
+			^ feedback.BMS_voltage_MSB//
+			^ feedback.BMS_Current_LSB//
+			^ feedback.BMS_Current_MSB//
+			^ feedback.BMS_Cells_status_group_1//
+			^ feedback.BMS_Cells_status_group_2//
+			^ feedback.BMS_Cells_status_group_3//
+			^ feedback.BMS_Cells_status_group_4//
+			^ feedback.BMS_Cells_status_group_5//
+			^ feedback.BMS_Cells_status_group_6//
+			^ feedback.BMS_Cells_status_group_7//
+			^ feedback.BMS_Cells_status_group_8//
+			^ feedback.BMS_Cells_status_group_9//
+			^ feedback.BMS_Cells_status_group_10//
+			^ feedback.BMS_Cells_status_group_11//
+			^ feedback.BMS_Cells_status_group_12//
+			^ feedback.BMS_Cells_status_group_13//
+			^ feedback.BMS_Cells_status_group_14//
+			^ feedback.BMS_Cells_status_group_15//
+			^ feedback.BMS_Cells_status_group_16//
+			^ feedback.BMS_Cells_status_group_17//
+			^ feedback.BMS_Cells_status_group_18//
+			^ feedback.BMS_Cells_status_group_19//
+			^ feedback.BMS_Cells_status_group_20//
+			^ feedback.BMS_Cells_status_group_21//
+			^ feedback.BMS_Cells_status_group_22//
+			^ feedback.BMS_Cells_status_group_23//
+			^ feedback.BMS_Cells_status_group_24//
+			^ feedback.BMS_Battery_tempature_1//
+			^ feedback.BMS_Battery_tempature_2//
+			^ feedback.BMS_Charge_cycles_full_LSB//
+			^ feedback.BMS_Charge_cycles_full_MSB//
+			^ feedback.BMS_Charge_cycles_partial_LSB//
+			^ feedback.BMS_Charge_cycles_partial_MSB//
+			^ feedback.Errors_LSB//
+			^ feedback.Errors_MSB//
+	);
 
 	HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &feedback, sizeof(feedback));
 }
