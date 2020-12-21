@@ -52,8 +52,10 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
 - [ ] Control controller power supply from serial link
   - [ ] with different power for front/rear
 - [ ] Link multiple controller
-- [ ] Process electric braking
 - [ ] Optimize performances
+- [ ] Process soft electric braking
+- [ ] Process wheel lock
+- [ ] Process soft throttle release
 - [ ] Communicate with BMS
   - [ ] Half-duplex
   - [ ] Full-duplex
