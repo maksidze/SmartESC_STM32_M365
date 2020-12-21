@@ -66,7 +66,7 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
 
 ## Serial link
 
-TODO
+[Here](https://docs.google.com/spreadsheets/d/1SmxQHb-3iMCkWmL3f3GHKCjGlgmRvZwS34Iuaf2yz5I/edit?usp=sharing)
 
 
 ## Flashing
