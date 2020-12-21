@@ -17,16 +17,17 @@ The controller is based on STM32F103C6T8 micro-controller.
 Xiaomi M365 Controller details :
 - The M365 controller exist to 3 versions and 1.4 & 2.1 have clone version more sheap
 some copy are very good, and some are bad 
-the bad copy have poor mosfet, poor aluminum heatskin but the pcb is OK 
-good copy exist only on 1.4 Rev have all good but probably not exist today  
+the bad copy have poor mosfets, poor aluminum heatskin but the pcb is OK 
+good copy exist only on 1.4 Rev have all good but probably not exist today
   - Rev 1.4 have 60v regulator (maximum absolute) can be use to 12S battery pack maximum safety 
   - Rev 2.1 have 90v regulator (maximum absolute) can be use to 19S battery pack maximum safety 
   - Rev 3.0 is exactly the same with 2.1 but design is more stronger for current than 2.1 & 1.4
 - stock Voltage sending limited to 54v by divided bridge resistor, but 150v tolérant 
 - stock Current reading to ~ +/- 100A per negative phase*
 - stock Capacitor is 1000uf 63v in stock can be change for 100V
-More détails here :
-https://docs.google.com/spreadsheets/d/1jOdUUpbCZVHQc2-eIezrbkNFHuf14I3zOeL0la91yoo/edit?usp=sharing
+- NEWS we find voltage régulator 100v for remplace the 90v régulator on the board
+  More détails here :
+  https://docs.google.com/spreadsheets/d/1jOdUUpbCZVHQc2-eIezrbkNFHuf14I3zOeL0la91yoo/edit?usp=sharing
 
 
 ## Requirements
