@@ -42,8 +42,13 @@ Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans l
 
 001 circuit commande alimentation OEM + pont diviseur de tension de mesure de tension de phases
 
-https://tinyurl.com/y7bfvebv
+    https://tinyurl.com/y7bfvebv
 
-002 ...
+002 Phase curent sending amplification OEM 1.4 borad
 
-003 ...
+    https://tinyurl.com/ydgk27vv
+
+003 Phase current sending and amplification OEM 2.1 board
+
+    https://tinyurl.com/y5oe8a3o
+
