@@ -26,10 +26,29 @@
 
 // Rx Structure USART
 typedef struct {
-	uint16_t start;
-	int16_t steer;
-	int16_t speed;
-	uint16_t checksum;
+	uint8_t Frame_start                          ;
+	uint8_t Type                                 ;
+	uint8_t Destination                          ;
+	uint8_t Number_of_ESC                        ;
+	uint8_t BMS_protocol                         ;
+	uint8_t ESC_Jumps                            ;
+	uint8_t Display_Version_Maj                  ;
+	uint8_t Display_Version_Main                 ;
+	uint8_t Power_ON                             ;
+	uint8_t Throttle                             ;
+	uint8_t Brake                                ;
+	uint8_t Torque                       ;
+	uint8_t Brake_torque                 ;
+	uint8_t Lock                                 ;
+	uint8_t Regulator                            ;
+	uint8_t Motor_direction                      ;
+	uint8_t Hall_sensors_direction               ;
+	uint8_t Ligth_power                          ;
+	uint8_t Max_temperature_reduce               ;
+	uint8_t Max_temperature_shutdown             ;
+	uint8_t Speed_limit_                         ;
+	uint8_t Motor_start_speed                    ;
+	uint8_t CRC8                                 ;
 } SerialFromDisplayToEsc;
 
 // Tx Struture USART

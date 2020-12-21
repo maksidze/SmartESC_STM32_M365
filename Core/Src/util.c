@@ -429,8 +429,8 @@ void poweroffPressCheck(void) {
  */
 void readInput(void) {
 
-	input1 = command.steer;
-	input2 = command.speed;
+	input1 = command.Brake << 2;
+	input2 = command.Throttle << 2;
 	timeoutCnt = 0;
 
 }
@@ -508,10 +508,32 @@ void usart_process_command(SerialFromDisplayToEsc *command_in,
 		SerialFromDisplayToEsc *command_out, uint8_t usart_idx) {
 
 	uint16_t checksum;
-	if (command_in->start == SERIAL_START_FRAME) {
-		checksum = (uint16_t) (command_in->start ^ command_in->steer
-				^ command_in->speed);
-		if (command_in->checksum == checksum) {
+	if (command_in->Frame_start == SERIAL_START_FRAME_DISPLAY_TO_ESC) {
+		checksum = (uint16_t) (command_in->Frame_start //
+				//
+				^ command_in-> Type                        //
+				^ command_in-> Destination                 //
+				^ command_in-> Number_of_ESC               //
+				^ command_in-> BMS_protocol                //
+				^ command_in-> ESC_Jumps                   //
+				^ command_in-> Display_Version_Maj         //
+				^ command_in-> Display_Version_Main        //
+				^ command_in-> Power_ON                    //
+				^ command_in-> Throttle                    //
+				^ command_in-> Brake                       //
+				^ command_in-> Torque                      //
+				^ command_in-> Brake_torque                //
+				^ command_in-> Lock                        //
+				^ command_in-> Regulator                   //
+				^ command_in-> Motor_direction             //
+				^ command_in-> Hall_sensors_direction      //
+				^ command_in-> Ligth_power                 //
+				^ command_in-> Max_temperature_reduce      //
+				^ command_in-> Max_temperature_shutdown    //
+				^ command_in-> Speed_limit_                //
+				^ command_in-> Motor_start_speed           //
+				);
+		if (command_in->CRC8 == checksum) {
 			*command_out = *command_in;
 			if (usart_idx == 3) {      // Sideboard USART3
 				timeoutCntSerial_R = 0;        // Reset timeout counter
@@ -522,7 +544,7 @@ void usart_process_command(SerialFromDisplayToEsc *command_in,
 }
 
 void usart_send_from_esc_to_display() {
-	feedback.start = (uint16_t) SERIAL_START_FRAME;
+	feedback.start = (uint16_t) SERIAL_START_FRAME_ESC_TO_DISPLAY;
 	feedback.cmd1 = (int16_t) cmd1;
 	feedback.cmd2 = (int16_t) cmd2;
 	feedback.currDC = (int16_t) analog.curr_dc;
