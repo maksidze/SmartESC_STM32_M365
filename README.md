@@ -47,7 +47,7 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
   - [X] in sine mode
   - [X] in FOC mode (speed, voltage & FOC)
 - [X] Controller the motor with serial link
-- [ ] Create a new serial link with all data
+- [X] Create a new serial link with all data
 - [ ] Control from the [SmartDisplay](https://github.com/Koxx3/SmartController_SmartDisplay)
 - [ ] Control controller power supply from serial link
   - [ ] with different power for front/rear
