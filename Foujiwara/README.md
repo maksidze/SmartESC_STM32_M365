@@ -54,4 +54,6 @@ Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans l
 
 
 
-![alt text](https://github.com/Koxx3/SmartESC/blob/M365/Foujiwara/Logo/Francewheel_logo_0%2C5x.png?raw=true)
+[![alt text](https://github.com/Koxx3/SmartESC/blob/M365/Foujiwara/Logo/Francewheel_logo_0%2C5x.png?raw=true)][1]
+
+[1]:https://paypal.me/pools/c/8vmEN0SFB0
