@@ -69,6 +69,18 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
 
 [Here](https://docs.google.com/spreadsheets/d/1SmxQHb-3iMCkWmL3f3GHKCjGlgmRvZwS34Iuaf2yz5I/edit?usp=sharing)
 
+## Remote control from Arduino
+
+Here is a test program :
+[Here](https://github.com/Koxx3/SmartESC_ESP32_serial_control)
+
+With this, you can remote control the SmartESC with an ESP32 :
+- analog PIN 34 : analog throttle with hall sensor trigger (0.8V -> 4.1V)
+- analog PIN 35 : analog brake with hall sensor trigger (0.8V -> 4.1V)
+- IO PIN 27 : SERIAL_ESP_TO_CNTRL
+- IO PIN 14 : SERIAL_CNTRL_TO_ESP       
+- Monitor serial : 921600 bauds
+- ESC serial : 115200 bauds
 
 ## Flashing
 
