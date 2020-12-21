@@ -55,3 +55,5 @@ Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans l
 
 
 ![Logo](/Foujiwara/logo/Francewheel_logo.png)
+
+![alt text](https://github.com/Koxx3/SmartESC/blob/M365/Foujiwara/Logo/Francewheel_logo_0%2C5x.png?raw=true)
