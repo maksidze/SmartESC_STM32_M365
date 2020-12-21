@@ -25,6 +25,8 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
 - stock Voltage sending limited to 54v by divided bridge resistor, but 150v tolérant 
 - stock Current reading to ~ +/- 100A per negative phase*
 - stock Capacitor is 1000uf 63v in stock can be change for 100V
+More détails here :
+https://docs.google.com/spreadsheets/d/1jOdUUpbCZVHQc2-eIezrbkNFHuf14I3zOeL0la91yoo/edit?usp=sharing
 
 
 ## Requirements
