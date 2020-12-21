@@ -44,7 +44,7 @@ Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans l
 
    https://tinyurl.com/y7bfvebv
 
-002 Phase curent sending amplification OEM 1.4 borad
+002 Phase curent sending amplification OEM 1.4 board
 
    https://tinyurl.com/ydgk27vv
 
