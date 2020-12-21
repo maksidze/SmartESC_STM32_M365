@@ -507,7 +507,7 @@ void usart3_rx_check(void) {
 void usart_process_command(SerialFromDisplayToEsc *command_in,
 		SerialFromDisplayToEsc *command_out, uint8_t usart_idx) {
 
-	uint16_t checksum;
+	uint8_t checksum;
 	if (command_in->Frame_start == SERIAL_START_FRAME_DISPLAY_TO_ESC) {
 		checksum = (uint16_t) (command_in->Frame_start //
 				//
