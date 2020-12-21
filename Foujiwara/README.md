@@ -18,7 +18,7 @@ Datasheet
 
 https://www.ti.com/lit/ds/symlink/lm5164.pdf?ts=1608486081860&ref_url=https%253A%252F%252Fwww.google.com%252F
 
-Sheet Moteur Brushless Specs 
+Sheet Motors Brushless Specs 
 
 https://docs.google.com/spreadsheets/d/1lmWaADTVRKPxEqRkWC1kKJLRQYBc_w8druSc7JFMx7Y/edit?usp=sharing
 
