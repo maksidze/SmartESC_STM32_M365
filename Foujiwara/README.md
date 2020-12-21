@@ -37,7 +37,8 @@ https://docs.google.com/spreadsheets/d/1lz-Ikm9ajtbFwuA75-WFOcxkhLofpcu3JeeBtXig
 
 
 Projets sur SIMULATEUR _______________________________________________________________________________________
-Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans le dossier, ce fichier permet de pouvoir réouvrir la simulation sur Lushproject si le lien deviens mort
+
+Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans le dossier, ce fichier permet de pouvoir réouvrir la simulation sur Lushproject si le lien décède
 
 001 circuit commande alimentation OEM + pont diviseur de tension de mesure de tension de phases
 
