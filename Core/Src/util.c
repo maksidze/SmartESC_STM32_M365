@@ -37,8 +37,11 @@ extern volatile adc_buf_t adc_buffer;
 extern UART_HandleTypeDef huart3;
 
 extern uint8_t enable;                  // global variable for motor enable
-
 extern volatile uint32_t timeoutCnt; // global variable for general timeout counter
+extern int16_t batVoltage;              // global variable for battery voltage
+extern int16_t board_temp_deg_c;
+extern int16_t speedMotor;
+extern int16_t curr_a_cnt_max;
 
 //------------------------------------------------------------------------
 // Global variables set here in util.c
@@ -75,6 +78,7 @@ static uint32_t rx_buffer_R_len = ARRAY_LEN(rx_buffer_R);
 static uint16_t timeoutCntSerial_R = 0; // Timeout counter for Rx Serial command
 static uint8_t timeoutFlagSerial_R = 0; // Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 
+static SerialFromEscToDisplay feedback;
 static SerialFromDisplayToEsc command;
 static SerialFromDisplayToEsc command_raw;
 static uint32_t command_len = sizeof(command);
@@ -87,14 +91,12 @@ static uint8_t standstillAcv = 0;
 // Matlab defines - from auto-code generation
 //---------------
 extern RT_MODEL *const rtM_Motor;
-extern P rtP_Left;                      /* Block parameters (auto storage) */
-extern DW       rtDW_Motor;                     /* Observable states */
-extern ExtU     rtU_Motor;                      /* External inputs */
-extern ExtY     rtY_Motor;                      /* External outputs */
-
+extern P rtP_Left; /* Block parameters (auto storage) */
+extern DW rtDW_Motor; /* Observable states */
+extern ExtU rtU_Motor; /* External inputs */
+extern ExtY rtY_Motor; /* External outputs */
 
 /* =========================== Initialization Functions =========================== */
-
 
 void Input_Lim_Init(void) {     // Input Limitations - ! Do NOT touch !
 	if (rtP_Left.b_fieldWeakEna) {
@@ -517,6 +519,34 @@ void usart_process_command(SerialFromDisplayToEsc *command_in,
 			}
 		}
 	}
+}
+
+void usart_send_from_esc_to_display() {
+	feedback.start = (uint16_t) SERIAL_START_FRAME;
+	feedback.cmd1 = (int16_t) cmd1;
+	feedback.cmd2 = (int16_t) cmd2;
+	feedback.currDC = (int16_t) analog.curr_dc;
+	feedback.speedMeas = (int16_t) rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
+	feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
+			/ BAT_CALIB_ADC);
+	feedback.boardTemp = (int16_t) board_temp_deg_c;
+
+	//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
+	feedback.currPhA = (int16_t) curr_a_cnt_max;
+	feedback.speedMotor = (int16_t) speedMotor;
+
+	feedback.checksum = (uint16_t) (feedback.start //
+	//
+			^ feedback.cmd1 //
+			^ feedback.cmd2 //
+			^ feedback.currDC //
+			^ feedback.speedMeas //
+			^ feedback.batVoltage //
+			^ feedback.boardTemp //
+			^ feedback.currPhA //
+			^ feedback.speedMotor);
+
+	HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &feedback, sizeof(feedback));
 }
 
 /* =========================== Filtering Functions =========================== */

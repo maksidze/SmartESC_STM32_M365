@@ -130,8 +130,6 @@ extern int16_t curr_a_cnt_max;
 // Local variables
 //------------------------------------------------------------------------
 
-static SerialFromEscToDisplay Feedback;
-
 static int16_t speed;                // local variable for speed. -1000 to 1000
 static int16_t steer;              // local variable for steering. -1000 to 1000
 static int16_t steerRateFixdt; // local fixed-point variable for steering rate limiter
@@ -320,35 +318,9 @@ int main(void) {
 				* (board_temp_adcFilt - TEMP_CAL_LOW_ADC)
 				/ (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
-		// ####### FEEDBACK SERIAL OUT #######
+		// ####### FEEDBACK SERIAL OUT TO DISPLAY #######
 		if (main_loop_counter % 2 == 0) {  // Send data periodically every 10 ms
-			Feedback.start = (uint16_t) SERIAL_START_FRAME;
-			Feedback.cmd1 = (int16_t) cmd1;
-			Feedback.cmd2 = (int16_t) cmd2;
-			Feedback.currDC = (int16_t) analog.curr_dc;
-			Feedback.speedMeas = (int16_t) rtY_Motor.n_mot * 2; // dirty fix for PWM running at 32KHz
-			Feedback.batVoltage = (int16_t) (batVoltage * BAT_CALIB_REAL_VOLTAGE
-					/ BAT_CALIB_ADC);
-			Feedback.boardTemp = (int16_t) board_temp_deg_c;
-
-			//if (__HAL_DMA_GET_COUNTER(huart3.hdmatx) == 0) {
-			Feedback.currPhA = (int16_t) curr_a_cnt_max;
-			Feedback.speedMotor = (int16_t) speedMotor;
-
-			Feedback.checksum = (uint16_t) (Feedback.start //
-			//
-					^ Feedback.cmd1 //
-					^ Feedback.cmd2 //
-					^ Feedback.currDC //
-					^ Feedback.speedMeas //
-					^ Feedback.batVoltage //
-					^ Feedback.boardTemp //
-					^ Feedback.currPhA //
-					^ Feedback.speedMotor);
-
-			HAL_UART_Transmit_DMA(&huart3, (uint8_t*) &Feedback,
-					sizeof(Feedback));
-			//}
+			usart_send_from_esc_to_display();
 		}
 
 #if KX
