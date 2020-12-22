@@ -455,11 +455,14 @@ void readCommand(void) {
 	brakePressed = (uint8_t) (cmd1 > 50);
 
 	if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // In case of timeout bring the system to a Safe State
-		ctrlModReq = OPEN_MODE; // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
+		// commented : not safe with escooters
+		//ctrlModReq = OPEN_MODE; // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
+
 		cmd1 = 0;
 		cmd2 = 0;
 	} else {
-		ctrlModReq = ctrlModReqRaw;                   // Follow the Mode request
+		// commented : not safe with escooters
+		//ctrlModReq = ctrlModReqRaw;                   // Follow the Mode request
 	}
 
 #if defined(CRUISE_CONTROL_SUPPORT) && (defined(SUPPORT_BUTTONS) || defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT))
