@@ -83,7 +83,7 @@ With this, you can remote control the SmartESC with an ESP32 :
 - ESC serial : 115200 bauds
 
 
-## Remote control from Arduino
+## Remote control from Chrome
 
 Use a FTDI adapter and launch the webconsole in Chrome :
 https://koxx3.fr.eu.org:8086/SmartESC_WebControl/
