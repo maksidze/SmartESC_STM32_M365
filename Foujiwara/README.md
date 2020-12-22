@@ -18,7 +18,7 @@ Datasheet
 
 https://www.ti.com/lit/ds/symlink/lm5164.pdf?ts=1608486081860&ref_url=https%253A%252F%252Fwww.google.com%252F
 
-Sheet Moteur Brushless Specs 
+Sheet Motors BLDC Specs 
 
 https://docs.google.com/spreadsheets/d/1lmWaADTVRKPxEqRkWC1kKJLRQYBc_w8druSc7JFMx7Y/edit?usp=sharing
 
@@ -44,7 +44,7 @@ Chaque paragraphe possède 3 bits d'identification lié a un fichier .txt dans l
 
    https://tinyurl.com/y7bfvebv
 
-002 Phase curent sending amplification OEM 1.4 borad
+002 Phase curent sending amplification OEM 1.4 board
 
    https://tinyurl.com/ydgk27vv
 
