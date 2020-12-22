@@ -2,10 +2,10 @@
 // LED usage
 #define BLDC_DMA 			1
 #define MAIN_LOOP 			2
-#define DEBUG_LED 			BLDC_DMA
+#define DEBUG_LED 			MAIN_LOOP
 
 // BLDC loop enabling
-#define BLDC_ENABLE_LOOP 	0
+#define BLDC_ENABLE_LOOP 	1
 
 // main loop auto commands
 #define LOOP_INC	    	3000

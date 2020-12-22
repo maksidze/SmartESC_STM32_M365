@@ -319,7 +319,7 @@ int main(void) {
 				/ (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
 
 		// ####### FEEDBACK SERIAL OUT TO DISPLAY #######
-		if (main_loop_counter % 2 == 0) {  // Send data periodically every 10 ms
+		if (main_loop_counter % 4 == 0) {  // Send data periodically every 10 ms
 			usart_send_from_esc_to_display();
 		}
 
@@ -365,7 +365,7 @@ int main(void) {
 #endif
 
 #if DEBUG_LED == MAIN_LOOP
-		HAL_GPIO_TogglePin(LED_PORT, LED_PIN);                 // This is to measure the main() loop duration with an oscilloscope connected to LED_PIN
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, main_loop_counter % 100 > 50);
 #endif
 
 		// Update main loop states
