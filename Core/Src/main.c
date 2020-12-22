@@ -31,6 +31,7 @@
 #include "rtwtypes.h"
 #include "bldc.h"
 #include "debug.h"
+#include "ntc.h"
 
 /* USER CODE END Includes */
 
@@ -314,9 +315,7 @@ int main(void) {
 		// ####### CALC BOARD TEMPERATURE #######
 		filtLowPass32(adc_buffer.temp, TEMP_FILT_COEF, &board_temp_adcFixdt);
 		board_temp_adcFilt = (int16_t) (board_temp_adcFixdt >> 16); // convert fixed-point to integer
-		board_temp_deg_c = (TEMP_CAL_HIGH_DEG_C - TEMP_CAL_LOW_DEG_C)
-				* (board_temp_adcFilt - TEMP_CAL_LOW_ADC)
-				/ (TEMP_CAL_HIGH_ADC - TEMP_CAL_LOW_ADC) + TEMP_CAL_LOW_DEG_C;
+		board_temp_deg_c = NTC_ADC2Temperature(board_temp_adcFilt);
 
 		// ####### FEEDBACK SERIAL OUT TO DISPLAY #######
 		if (main_loop_counter % 4 == 0) {  // Send data periodically every 10 ms

@@ -574,7 +574,7 @@ void usart_send_from_esc_to_display() {
 	feedback.Controller_Voltage_MSB = (batVoltageMillivolts >> 8) & 0xff;
 	feedback.Controller_Current_LSB  = analog.curr_dc & 0xff;
 	feedback.Controller_Current_MSB  = (analog.curr_dc >> 8) & 0xff;
-	feedback.MOSFET_temperature = board_temp_deg_c;
+	feedback.MOSFET_temperature = board_temp_deg_c / 10;
 	feedback.ERPM_LSB = rpm & 0xff;
 	feedback.ERPM_MSB = (rpm >> 8) & 0xff;
 	//feedback.Lock_status                                  ;
