@@ -26,21 +26,6 @@
 #include "stm32f1xx_hal.h"
 #include "config.h"
 
-#define LEFT_HALL_U_PIN HALL_A_Pin
-#define LEFT_HALL_V_PIN HALL_B_Pin
-#define LEFT_HALL_W_PIN HALL_C_Pin
-
-#define LEFT_HALL_U_PORT HALL_A_GPIO_Port
-#define LEFT_HALL_V_PORT HALL_B_GPIO_Port
-#define LEFT_HALL_W_PORT HALL_C_GPIO_Port
-
-#define LEFT_TIM TIM1
-#define LEFT_TIM_U CCR1
-#define LEFT_TIM_V CCR2
-#define LEFT_TIM_W CCR3
-
-
-
 //#define PHASE_CURR_mA_CNT 50 //mA per bit
 #define DC_VOLT_uV_CNT 14431 //uV per bit
 

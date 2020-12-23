@@ -196,9 +196,9 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// ========================= LEFT MOTOR ============================
 	// Get hall sensors values
-	uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
-	uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
-	uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
+	uint8_t hall_ul = !(HALL_A_GPIO_Port->IDR & HALL_A_Pin);
+	uint8_t hall_vl = !(HALL_B_GPIO_Port->IDR & HALL_B_Pin);
+	uint8_t hall_wl = !(HALL_C_GPIO_Port->IDR & HALL_C_Pin);
 
 	/* Set motor inputs here */
 	rtU_Motor.b_motEna = enableFin;
@@ -226,11 +226,11 @@ void DMA1_Channel1_IRQHandler(void) {
 #if BLDC_ENABLE_LOOP
 
 	/* Apply commands */
-	LEFT_TIM->LEFT_TIM_U = (uint16_t) CLAMP(ul + pwm_res / 2, pwm_margin,
+	TIM1->CCR1 = (uint16_t) CLAMP(ul + pwm_res / 2, pwm_margin,
 			pwm_res - pwm_margin);
-	LEFT_TIM->LEFT_TIM_V = (uint16_t) CLAMP(vl + pwm_res / 2, pwm_margin,
+	TIM1->CCR2 = (uint16_t) CLAMP(vl + pwm_res / 2, pwm_margin,
 			pwm_res - pwm_margin);
-	LEFT_TIM->LEFT_TIM_W = (uint16_t) CLAMP(wl + pwm_res / 2, pwm_margin,
+	TIM1->CCR3 = (uint16_t) CLAMP(wl + pwm_res / 2, pwm_margin,
 			pwm_res - pwm_margin);
 
 	// =================================================================
