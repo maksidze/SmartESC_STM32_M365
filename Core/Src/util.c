@@ -148,8 +148,9 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart) {
 /* =========================== General Functions =========================== */
 
 void calcAvgSpeed(void) {
+
 	// Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-	speedAvg = rtY_Motor.n_mot;
+	speedAvg = rtY_Motor.n_mot * 2; // double because of the 32KHz freq
 
 	// Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
 	if (SPEED_COEFFICIENT & (1 << 16)) {
@@ -430,8 +431,8 @@ void poweroffPressCheck(void) {
 void readInput(void) {
 
 	// throttle / brake commands
-	input1 = command.Brake << 2;
-	input2 = command.Throttle << 2;
+	input1 = 0; //command.Brake << 2;
+	input2 = 0; //command.Throttle << 2;
 
 	// speed limiter
 	uint16_t speed_limit = command.Speed_limit;
