@@ -319,7 +319,7 @@ int main(void)
 		board_temp_deg_c = NTC_ADC2Temperature(board_temp_adcFilt);
 
 		// ####### FEEDBACK SERIAL OUT TO DISPLAY #######
-		if (main_loop_counter % 4 == 0) {  // Send data periodically every 10 ms
+		if (main_loop_counter % 4 == 0) {  // Send data periodically every 20 ms
 			usart_send_from_esc_to_display();
 		}
 
