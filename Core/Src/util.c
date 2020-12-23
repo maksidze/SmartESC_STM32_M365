@@ -429,13 +429,22 @@ void poweroffPressCheck(void) {
  */
 void readInput(void) {
 
+	// throttle / brake commands
 	input1 = command.Brake << 2;
 	input2 = command.Throttle << 2;
 
-	uint16_t speed_limit = command.Speed_limit ;
 	// speed limiter
+	uint16_t speed_limit = command.Speed_limit;
 	if (command.Speed_limit > 0)
-		rtP_Left.n_max = (speed_limit * 10) << 4;
+		rtP_Left.n_max = (speed_limit * 5) << 4;
+
+	// WARNING -- NOT final usage -- test only
+	if (command.Ligth_power == 1)
+		ctrlModReq = TRQ_MODE;
+	else if (command.Ligth_power == 2)
+		ctrlModReq = VLT_MODE;
+	else
+		ctrlModReq = SPD_MODE; // can use SPD_MODE or VLT_MODE
 
 	timeoutCnt = 0;
 
