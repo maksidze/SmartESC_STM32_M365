@@ -26,15 +26,6 @@
 #include "stm32f1xx_hal.h"
 #include "config.h"
 
-#if KX
-#define LEFT_HALL_U_PIN GPIO_PIN_5
-#define LEFT_HALL_V_PIN GPIO_PIN_6
-#define LEFT_HALL_W_PIN GPIO_PIN_7
-
-#define LEFT_HALL_U_PORT GPIOB
-#define LEFT_HALL_V_PORT GPIOB
-#define LEFT_HALL_W_PORT GPIOB
-#else
 #define LEFT_HALL_U_PIN HALL_A_Pin
 #define LEFT_HALL_V_PIN HALL_B_Pin
 #define LEFT_HALL_W_PIN HALL_C_Pin
@@ -42,43 +33,11 @@
 #define LEFT_HALL_U_PORT HALL_A_GPIO_Port
 #define LEFT_HALL_V_PORT HALL_B_GPIO_Port
 #define LEFT_HALL_W_PORT HALL_C_GPIO_Port
-#endif
 
-#if KX
-#define LEFT_TIM TIM8
-#define LEFT_TIM_U CCR1
-#define LEFT_TIM_UH_PIN GPIO_PIN_6
-#define LEFT_TIM_UH_PORT GPIOC
-#define LEFT_TIM_UL_PIN GPIO_PIN_7
-#define LEFT_TIM_UL_PORT GPIOA
-#define LEFT_TIM_V CCR2
-#define LEFT_TIM_VH_PIN GPIO_PIN_7
-#define LEFT_TIM_VH_PORT GPIOC
-#define LEFT_TIM_VL_PIN GPIO_PIN_0
-#define LEFT_TIM_VL_PORT GPIOB
-#define LEFT_TIM_W CCR3
-#define LEFT_TIM_WH_PIN GPIO_PIN_8
-#define LEFT_TIM_WH_PORT GPIOC
-#define LEFT_TIM_WL_PIN GPIO_PIN_1
-#define LEFT_TIM_WL_PORT GPIOB
-#else
 #define LEFT_TIM TIM1
 #define LEFT_TIM_U CCR1
-//#define LEFT_TIM_UH_PIN GPIO_PIN_6
-//#define LEFT_TIM_UH_PORT GPIOC
-//#define LEFT_TIM_UL_PIN GPIO_PIN_7
-//#define LEFT_TIM_UL_PORT GPIOA
 #define LEFT_TIM_V CCR2
-//#define LEFT_TIM_VH_PIN GPIO_PIN_7
-//#define LEFT_TIM_VH_PORT GPIOC
-//#define LEFT_TIM_VL_PIN GPIO_PIN_0
-//#define LEFT_TIM_VL_PORT GPIOB
 #define LEFT_TIM_W CCR3
-//#define LEFT_TIM_WH_PIN GPIO_PIN_8
-//#define LEFT_TIM_WH_PORT GPIOC
-//#define LEFT_TIM_WL_PIN GPIO_PIN_1
-//#define LEFT_TIM_WL_PORT GPIOB
-#endif
 
 
 
