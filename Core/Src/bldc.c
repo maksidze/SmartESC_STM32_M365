@@ -125,8 +125,6 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
 
-#if BLDC_ENABLE_LOOP
-
 	if (offsetcount < 1000) {  // calibrate ADC offsets
 		offsetcount++;
 		offset_curr_a = (adc_buffer.curr_a + offset_curr_a) / 2;
@@ -184,11 +182,14 @@ void DMA1_Channel1_IRQHandler(void) {
 	int ul, vl, wl;
 	static boolean_T OverrunFlag = false;
 
+#if BLDC_ENABLE_LOOP
+
 	/* Check for overrun */
 	if (OverrunFlag) {
 		return;
 	}
 	OverrunFlag = true;
+#endif
 
 	/* Make sure to stop BOTH motors in case of an error */
 	enableFin = enable && !rtY_Motor.z_errCode;
@@ -211,9 +212,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	// rtU_Left.a_mechAngle   = ...; // Angle input in DEGREES [0,360] in fixdt(1,16,4) data type. If `angle` is float use `= (int16_t)floor(angle * 16.0F)` If `angle` is integer use `= (int16_t)(angle << 4)`
 
 	/* Step the controller */
-#ifdef MOTOR_LEFT_ENA
 	BLDC_controller_step(rtM_Motor);
-#endif
 
 	/* Get motor outputs here */
 	ul = rtY_Motor.DC_phaA;
@@ -222,6 +221,9 @@ void DMA1_Channel1_IRQHandler(void) {
 	errCodeLeft = rtY_Motor.z_errCode;
 	motSpeedLeft = rtY_Motor.n_mot;
 	// motAngleLeft = rtY_Left.a_elecAngle;
+
+
+#if BLDC_ENABLE_LOOP
 
 	/* Apply commands */
 	LEFT_TIM->LEFT_TIM_U = (uint16_t) CLAMP(ul + pwm_res / 2, pwm_margin,
@@ -233,6 +235,9 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// =================================================================
 
+#endif
+
+
 #if DEBUG_LED == BLDC_DMA
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
 #endif
@@ -240,8 +245,6 @@ void DMA1_Channel1_IRQHandler(void) {
 	counter++;
 	/* Indicate task complete */
 	OverrunFlag = false;
-
-#endif
 
 	// ###############################################################################
 
