@@ -165,17 +165,17 @@ void DMA1_Channel1_IRQHandler(void) {
 		batVoltage = (int16_t) (batVoltageFixdt >> 16); // convert fixed-point to integer
 	}
 
+#if BLDC_CURRENT_LIMIT
 	// Disable PWM when current limit is reached (current chopping)
 	// This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
 	// curDC_max in A
 	// curL_DC in mA
-/*
 	if ((ABS(analog.curr_dc) > (curDC_max)) || enable == 0) {
-		LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+		TIM1->BDTR &= ~TIM_BDTR_MOE;
 	} else {
-		LEFT_TIM->BDTR |= TIM_BDTR_MOE;
+		TIM1->BDTR |= TIM_BDTR_MOE;
 	}
-*/
+#endif
 
 	// ############################### MOTOR CONTROL ###############################
 
@@ -220,8 +220,6 @@ void DMA1_Channel1_IRQHandler(void) {
 	wl = rtY_Motor.DC_phaC;
 	errCodeLeft = rtY_Motor.z_errCode;
 	motSpeedLeft = rtY_Motor.n_mot;
-	// motAngleLeft = rtY_Left.a_elecAngle;
-
 
 #if BLDC_ENABLE_LOOP
 
@@ -232,8 +230,6 @@ void DMA1_Channel1_IRQHandler(void) {
 			pwm_res - pwm_margin);
 	TIM1->CCR3 = (uint16_t) CLAMP(wl + pwm_res / 2, pwm_margin,
 			pwm_res - pwm_margin);
-
-	// =================================================================
 
 #endif
 
