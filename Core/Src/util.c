@@ -431,8 +431,8 @@ void poweroffPressCheck(void) {
 void readInput(void) {
 
 	// throttle / brake commands
-	input1 = 0; //command.Brake << 2;
-	input2 = 0; //command.Throttle << 2;
+	input1 = command.Brake << 2;
+	input2 = command.Throttle << 2;
 
 	// speed limiter
 	uint16_t speed_limit = command.Speed_limit;
