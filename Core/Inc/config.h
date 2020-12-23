@@ -5,33 +5,14 @@
 #include "stm32f1xx_hal.h"
 
 // ############################### VARIANT SELECTION ###############################
-// PlatformIO: uncomment desired variant in platformio.ini
-// Keil uVision: select desired variant from the Target drop down menu (to the right of the Load button)
-// Ubuntu: define the desired build variant here if you want to use make in console
-// or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
-#if !defined(PLATFORMIO)
-  //#define VARIANT_ADC         // Variant for control via ADC input
-  //#define VARIANT_USART       // Variant for Serial control via USART3 input
-  //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
-  //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
-  //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
-  //#define VARIANT_IBUS        // Variant for RC-Remotes with FLYSKY IBUS
-  #define VARIANT_HOVERCAR    // Variant for HOVERCAR build
-  //#define VARIANT_HOVERBOARD  // Variant for HOVERBOARD build
-  //#define VARIANT_TRANSPOTTER // Variant for TRANSPOTTER build https://github.com/NiklasFauth/hoverboard-firmware-hack/wiki/Build-Instruction:-TranspOtter https://hackaday.io/project/161891-transpotter-ng
-  //#define VARIANT_SKATEBOARD  // Variant for SKATEBOARD build
-#endif
-// ########################### END OF VARIANT SELECTION ############################
+#define VARIANT_HOVERCAR
+#define DEBUG_SERIAL_ASCII
 
 
 // ############################### DO-NOT-TOUCH SETTINGS ###############################
 #define PWM_FREQ            16000     // PWM frequency in Hz / is also used for buzzer
 #define DEAD_TIME              48     // PWM deadtime
-#ifdef VARIANT_TRANSPOTTER
-  #define DELAY_IN_MAIN_LOOP    2
-#else
-  #define DELAY_IN_MAIN_LOOP    5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
-#endif
+#define DELAY_IN_MAIN_LOOP      5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 #define TIMEOUT                20     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             42     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
 
@@ -197,37 +178,6 @@
 // ######################### END OF CRUISE CONTROL SETTINGS ##########################
 
 
-
-// ############################### DEBUG SERIAL ###############################
-/* Connect GND and RX of a 3.3v uart-usb adapter to the left (USART2) or right sensor board cable (USART3)
- * Be careful not to use the red wire of the cable. 15v will destroy everything.
- * If you are using VARIANT_NUNCHUK, disable it temporarily.
- * enable DEBUG_SERIAL_USART3 or DEBUG_SERIAL_USART2
- * and DEBUG_SERIAL_ASCII use asearial terminal.
- *
- *
- * DEBUG_SERIAL_ASCII output is:
- * // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
- *
- * 1:   (int16_t)input1);                                                   raw input1: ADC1, UART, PWM, PPM, iBUS
- * 2:   (int16_t)input2);                                                   raw input2: ADC2, UART, PWM, PPM, iBUS
- * 3:   (int16_t)speedR);                                                   output command: [-1000, 1000]
- * 4:   (int16_t)speedL);                                                   output command: [-1000, 1000]
- * 5:   (int16_t)adc_buffer.batt1);                                         Battery adc-value measured by mainboard
- * 6:   (int16_t)(batVoltage * BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC));    Battery calibrated voltage multiplied by 100 for verifying battery voltage calibration
- * 7:   (int16_t)board_temp_adcFilt);                                       for board temperature calibration
- * 8:   (int16_t)board_temp_deg_c);                                         Temperature in celcius for verifying board temperature calibration
- *
-*/
-
-#ifndef VARIANT_TRANSPOTTER
-  #define DEBUG_SERIAL_ASCII
-#endif
-// ########################### END OF DEBUG SERIAL ############################
-
-
-
-
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
   // #define SIDEBOARD_SERIAL_USART2
@@ -290,12 +240,6 @@
   #define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
   #define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
 #endif
-
-// Multiple tap detection: default DOUBLE Tap on Brake pedal (4 pulses)
-#define MULTIPLE_TAP_NR       2 * 2      // [-] Define tap number: MULTIPLE_TAP_NR = number_of_taps * 2, number_of_taps = 1 (for single taping), 2 (for double tapping), 3 (for triple tapping), etc...
-#define MULTIPLE_TAP_HI       600        // [-] Multiple tap detection High hysteresis threshold
-#define MULTIPLE_TAP_LO       200        // [-] Multiple tap detection Low hysteresis threshold
-#define MULTIPLE_TAP_TIMEOUT  2000       // [ms] Multiple tap detection Timeout period. The taps need to happen within this time window to be accepted.
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
 
