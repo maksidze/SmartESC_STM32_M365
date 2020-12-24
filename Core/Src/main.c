@@ -242,10 +242,12 @@ int main(void)
 #endif
 
 #if TEST_AUTOSTART
-		if (main_loop_counter < LOOP_INC) {
+		if (main_loop_counter < 500) {
 			cmd2 = main_loop_counter;
-		} else {
-			cmd2 = LOOP_INC;
+		}
+		else
+		{
+			cmd2 =  500;
 		}
 #endif
 
@@ -477,6 +479,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = ADC_REGULAR_RANK_2;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -485,7 +488,6 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_3;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -673,6 +675,12 @@ static void MX_TIM1_Init(void)
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+
+
+    // Start counting >0 to effectively offset timers by the time it takes for one ADC conversion to complete.
+    // This method allows that the Phase currents ADC measurements are properly aligned with LOW-FET ON region for both motors
+	TIM1->CNT = 20;// ADC_TOTAL_CONV_TIME / 2;
+
 
 	htim1.Instance->RCR = 1;
 

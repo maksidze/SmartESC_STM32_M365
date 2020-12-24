@@ -51,7 +51,7 @@ uint32_t counter = 0;
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
                                         /* official firmware value */
 #else
-static int16_t pwm_margin = 10; // Xiaomi firmware value
+static int16_t pwm_margin = 100; // Xiaomi firmware value
 #endif
 
 analog_t analog;
@@ -76,6 +76,10 @@ static int offset_curr_c = 2000;
 static int offset_volt_a = 0;
 static int offset_volt_b = 0;
 static int offset_volt_c = 0;
+
+#define TEST_NB_SAMPLES 500
+
+int32_t adb_buffer_storage_ph1[TEST_NB_SAMPLES];
 
 uint8_T errCodeLeft;
 int16_T motSpeedLeft;
@@ -143,6 +147,8 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_a = analog.curr_a_cnt * A2BIT_CONV;
 	analog.curr_b = analog.curr_b_cnt * A2BIT_CONV;
 	analog.curr_c = analog.curr_c_cnt * A2BIT_CONV;
+
+	adb_buffer_storage_ph1[counter % TEST_NB_SAMPLES] = analog.curr_a;
 
 	// compute DC current
 	static int32_t filter_buffer;

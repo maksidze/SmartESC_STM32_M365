@@ -9,7 +9,7 @@
 #define BLDC_CURRENT_LIMIT      1
 
 // main loop auto commands
-#define LOOP_INC	    		3000
+#define LOOP_INC	    		1000
 #define TEST_AUTOSTART 			0
 #define TEST_LOOP 				0
 #define TEST_READ_UART_COMMANDS 1

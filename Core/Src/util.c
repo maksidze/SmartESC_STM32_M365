@@ -447,6 +447,8 @@ void readInput(void) {
 	else
 		ctrlModReq = SPD_MODE; // can use SPD_MODE or VLT_MODE
 
+	//TIM1->CNT = command.Lock * 20;
+
 	timeoutCnt = 0;
 
 }

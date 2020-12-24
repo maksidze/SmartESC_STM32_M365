@@ -175,68 +175,39 @@
 // ######################### END OF CRUISE CONTROL SETTINGS ##########################
 
 
-// ############################ VARIANT_USART SETTINGS ############################
-#ifdef VARIANT_USART
-  // #define SIDEBOARD_SERIAL_USART2
-  // #define CONTROL_SERIAL_USART2   // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  // #define FEEDBACK_SERIAL_USART2  // left sensor board cable, disable if ADC or PPM is used!
-
-  // #define SIDEBOARD_SERIAL_USART3
-  #define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-  // Min / Max values of each channel (use DEBUG to determine these values)
-  #define INPUT1_TYPE        1       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT1_MIN        -1000    // (-1000 - 0)
-  #define INPUT1_MID         0
-  #define INPUT1_MAX         1000    // (0 - 1000)
-  #define INPUT1_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  
-  #define INPUT2_TYPE        1       // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT2_MIN        -1000    // (-1000 - 0)
-  #define INPUT2_MID         0
-  #define INPUT2_MAX         1000    // (0 - 1000)
-  #define INPUT2_DEADBAND    0       // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  // #define SUPPORT_BUTTONS_LEFT       // use left sensor board cable for button inputs.  Disable DEBUG_SERIAL_USART2!
-  // #define SUPPORT_BUTTONS_RIGHT      // use right sensor board cable for button inputs. Disable DEBUG_SERIAL_USART3!
-#endif
-// ######################## END OF VARIANT_USART SETTINGS #########################
-
-
 
 // ############################ VARIANT_HOVERCAR SETTINGS ############################
-#ifdef VARIANT_HOVERCAR
-  #define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-  #define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
-  #define ADC_PROTECT_THRESH  200       // ADC Protection threshold below/above the MIN/MAX ADC values
-  
-  #define INPUT1_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT1_MIN          0      // min ADC1-value while poti at minimum-position (0 - 4095)
-  #define INPUT1_MID          0
-  #define INPUT1_MAX          1000      // max ADC1-value while poti at maximum-position (0 - 4095)
-  #define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  
-  #define INPUT2_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-  #define INPUT2_MIN          0       // min ADC2-value while poti at minimum-position (0 - 4095)
-  #define INPUT2_MID          0
-  #define INPUT2_MAX          1000      // max ADC2-value while poti at maximum-position (0 - 4095)
-  #define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-  
-  #define SPEED_COEFFICIENT   26214     // 1.0f = 16384 / 1.6f = 26214 / 2.0f = 32767
-  #define STEER_COEFFICIENT   0         // 0.0f
-  // #define INVERT_R_DIRECTION            // Invert rotation of right motor
-  // #define INVERT_L_DIRECTION            // Invert rotation of left motor
-  // #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
-  #define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
-  // #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+#define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+#define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
+#define ADC_PROTECT_THRESH  200       // ADC Protection threshold below/above the MIN/MAX ADC values
 
-  // Extra functionality
-  #define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
+#define INPUT1_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+#define INPUT1_MIN          0      // min ADC1-value while poti at minimum-position (0 - 4095)
+#define INPUT1_MID          0
+#define INPUT1_MAX          1000      // max ADC1-value while poti at maximum-position (0 - 4095)
+#define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+
+#define INPUT2_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+#define INPUT2_MIN          0       // min ADC2-value while poti at minimum-position (0 - 4095)
+#define INPUT2_MID          0
+#define INPUT2_MAX          1000      // max ADC2-value while poti at maximum-position (0 - 4095)
+#define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+
+#define SPEED_COEFFICIENT   26214     // 1.0f = 16384 / 1.6f = 26214 / 2.0f = 32767
+#define STEER_COEFFICIENT   0         // 0.0f
+// #define INVERT_R_DIRECTION            // Invert rotation of right motor
+// #define INVERT_L_DIRECTION            // Invert rotation of left motor
+// #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
+#define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
+// #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+
+// Extra functionality
+#define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
 //  #define STANDSTILL_HOLD_ENABLE        // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
 //  #define ELECTRIC_BRAKE_ENABLE         // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-  #define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-  #define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
-#endif
+#define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
+#define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
 
