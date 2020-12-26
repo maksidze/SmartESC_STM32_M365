@@ -446,9 +446,9 @@ void readInput(void) {
 	if (command.Ligth_power == 1)
 		ctrlModReq = TRQ_MODE;
 	else if (command.Ligth_power == 2)
-		ctrlModReq = VLT_MODE;
-	else
 		ctrlModReq = SPD_MODE; // can use SPD_MODE or VLT_MODE
+	else
+		ctrlModReq = VLT_MODE;
 
 	//TIM1->CNT = command.Lock * 20;
 
