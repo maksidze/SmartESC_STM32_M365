@@ -128,7 +128,7 @@ void adcCalibLim(void);
 void updateCurSpdLim(void);
 void saveConfig(void);
 void standstillHold(void);
-void electricBrake(uint16_t speedBlend, uint8_t reverseDir);
+void electricBrake(uint16_t speedBlend);
 void cruiseControl(uint8_t button);
 
 // Poweroff Functions
@@ -146,7 +146,7 @@ void usart_send_from_esc_to_display();
 // Filtering Functions
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
-void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL);
+void mixerFcn(int16_t rtu_speed, int16_t *rty_speed);
 
 #endif
 

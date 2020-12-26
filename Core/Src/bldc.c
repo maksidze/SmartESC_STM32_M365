@@ -60,7 +60,6 @@ extern uint8_t ctrlModReq;
 int32_t curDC_max = I_DC_MAX * 1000; //(I_DC_MAX * A2BIT_CONV);
 
 volatile int pwm = 0;
-volatile int pwmr = 0;
 
 extern volatile adc_buf_t adc_buffer;
 

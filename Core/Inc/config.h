@@ -131,12 +131,6 @@
 #define PHASE_ADV_MAX   0 //SINE             // [deg] Maximum Phase Advance angle (only for SIN). Higher angle results in higher maximum speed.
 #define FIELD_WEAK_LO   500             // ( 500, 1000] Input target Low threshold for starting Field Weakening / Phase Advance. Do NOT set this higher than 1000.
 #define FIELD_WEAK_HI   1500             // (1000, 1500] Input target High threshold for reaching maximum Field Weakening / Phase Advance. Do NOT set this higher than 1500.
-
-// Extra functionality
-// #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-// #define ELECTRIC_BRAKE_ENABLE           // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-// #define ELECTRIC_BRAKE_MAX    100       // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-// #define ELECTRIC_BRAKE_THRES  120       // (0, 500) Threshold below at which the electric brake starts engaging.
 // ########################### END OF MOTOR CONTROL ########################
 
 
@@ -198,16 +192,15 @@
 #define STEER_COEFFICIENT   0         // 0.0f
 // #define INVERT_R_DIRECTION            // Invert rotation of right motor
 // #define INVERT_L_DIRECTION            // Invert rotation of left motor
-// #define SIDEBOARD_SERIAL_USART3       // Tx -> Rx of right sensor board: for LED battery indication. Comment-out if sideboard is not used!
 #define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
-// #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
 
 // Extra functionality
 #define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
-//  #define STANDSTILL_HOLD_ENABLE        // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-//  #define ELECTRIC_BRAKE_ENABLE         // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-#define ELECTRIC_BRAKE_MAX    100     // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-#define ELECTRIC_BRAKE_THRES  120     // (0, 500) Threshold below at which the electric brake starts engaging.
+// #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
+#define ELECTRIC_BRAKE_ENABLE           // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
+#define ELECTRIC_BRAKE_MAX    500       // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
+#define ELECTRIC_BRAKE_THRES  120       // (0, 500) Threshold below at which the electric brake starts engaging.
+
 // ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
 
@@ -230,17 +223,7 @@
 #ifndef FILTER
   #define FILTER DEFAULT_FILTER
 #endif
-#ifndef SPEED_COEFFICIENT
-  #define SPEED_COEFFICIENT DEFAULT_SPEED_COEFFICIENT
-#endif
-#ifndef STEER_COEFFICIENT
-  #define STEER_COEFFICIENT DEFAULT_STEER_COEFFICIENT
-#endif
-#ifdef CONTROL_ADC
-  #define INPUT_MARGIN            100                     // Input margin applied on the raw ADC min and max to make sure the motor MIN and MAX values are reached even in the presence of noise
-#else
-  #define INPUT_MARGIN            0
-#endif
+#define INPUT_MARGIN            0
 // ########################### END OF APPLY DEFAULT SETTING ############################
 
 

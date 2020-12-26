@@ -47,10 +47,10 @@ extern int16_t curr_a_cnt_max;
 // Global variables set here in util.c
 //------------------------------------------------------------------------
 
-int16_t cmd1;                          // normalized input value. -1000 to 1000
-int16_t cmd2;                          // normalized input value. -1000 to 1000
-int16_t input1;                        // Non normalized input value
-int16_t input2;                        // Non normalized input value
+int16_t cmdBrake;                          // normalized input value. -1000 to 1000
+int16_t cmdThrottle;                          // normalized input value. -1000 to 1000
+int16_t inputBrake;                        // Non normalized input value
+int16_t inputThrottle;                        // Non normalized input value
 
 int16_t speedAvg;                      // average measured speed
 int16_t speedAvgAbs;                   // average measured speed in absolute
@@ -201,8 +201,8 @@ void updateCurSpdLim(void) {
   #if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
   consoleLog("Torque and Speed limits update started...\r\n");
 
-  int32_t  input1_fixdt = input1 << 16;
-  int32_t  input2_fixdt = input2 << 16;  
+  int32_t  input1_fixdt = inputBrake << 16;
+  int32_t  input2_fixdt = inputThrottle << 16;  
   uint16_t cur_factor;    // fixdt(0,16,16)
   uint16_t spd_factor;    // fixdt(0,16,16)
   uint16_t cur_spd_timeout = 0;
@@ -211,8 +211,8 @@ void updateCurSpdLim(void) {
   // Wait for the power button press
   while (!HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && cur_spd_timeout++ < 2000) {  // 10 sec timeout
     readInput();
-    filtLowPass32(input1, FILTER, &input1_fixdt);
-    filtLowPass32(input2, FILTER, &input2_fixdt);
+    filtLowPass32(inputBrake, FILTER, &input1_fixdt);
+    filtLowPass32(inputThrottle, FILTER, &input2_fixdt);
     HAL_Delay(5);
   }
   // Calculate scaling factors
@@ -271,8 +271,8 @@ void saveConfig() {
 void standstillHold(void) {
 #if defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
     if (!rtP_Left.b_cruiseCtrlEna) {                          // If Stanstill in NOT Active -> try Activation
-      if (((cmd1 > 50 || cmd2 < -50) && speedAvgAbs < 30)     // Check if Brake is pressed AND measured speed is small
-          || (cmd2 < 20 && speedAvgAbs < 5)) {                // OR Throttle is small AND measured speed is very small
+      if (((cmdBrake > 50 || cmdThrottle < -50) && speedAvgAbs < 30)     // Check if Brake is pressed AND measured speed is small
+          || (cmdThrottle < 20 && speedAvgAbs < 5)) {                // OR Throttle is small AND measured speed is very small
         rtP_Left.n_cruiseMotTgt   = 0;
         rtP_Right.n_cruiseMotTgt  = 0;
         rtP_Left.b_cruiseCtrlEna  = 1;
@@ -281,7 +281,7 @@ void standstillHold(void) {
       } 
     }
     else {                                                    // If Stanstill is Active -> try Deactivation
-      if (cmd1 < 20 && cmd2 > 50 && !cruiseCtrlAcv) {         // Check if Brake is released AND Throttle is pressed AND no Cruise Control
+      if (cmdBrake < 20 && cmdThrottle > 50 && !cruiseCtrlAcv) {         // Check if Brake is released AND Throttle is pressed AND no Cruise Control
         rtP_Left.b_cruiseCtrlEna  = 0;
         rtP_Right.b_cruiseCtrlEna = 0;
         standstillAcv = 0;
@@ -295,10 +295,10 @@ void standstillHold(void) {
  * In case of TORQUE mode, this function replaces the motor "freewheel" with a constant braking when the input torque request is 0.
  * This is useful when a small amount of motor braking is desired instead of "freewheel".
  * 
- * Input: speedBlend = fixdt(0,16,15), reverseDir = {0, 1}
+ * Input: speedBlend = fixdt(0,16,15)
  * Output: cmd2 (Throtle) with brake component included
  */
-void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
+void electricBrake(uint16_t speedBlend) {
 #if defined(ELECTRIC_BRAKE_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ == TRQ_MODE)
     int16_t brakeVal;
 
@@ -309,20 +309,15 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
       brakeVal = (int16_t)(( ELECTRIC_BRAKE_MAX * speedBlend) >> 15);          
     }
 
-    // Check if direction is reversed
-    if (reverseDir) {
-      brakeVal = -brakeVal;
-    }
-
     // Calculate the new cmd2 with brake component included
-    if (cmd2 >= 0 && cmd2 < ELECTRIC_BRAKE_THRES) {
-      cmd2 = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - cmd2) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (cmd2 >= -ELECTRIC_BRAKE_THRES && cmd2 < 0) {
-      cmd2 = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + cmd2) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (cmd2 >= ELECTRIC_BRAKE_THRES) {
-      cmd2 = MAX(brakeVal, ((cmd2 - ELECTRIC_BRAKE_THRES) * inputMax) / (inputMax - ELECTRIC_BRAKE_THRES));
+    if (cmdThrottle >= 0 && cmdThrottle < ELECTRIC_BRAKE_THRES) {
+      cmdThrottle = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (cmdThrottle >= -ELECTRIC_BRAKE_THRES && cmdThrottle < 0) {
+      cmdThrottle = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (cmdThrottle >= ELECTRIC_BRAKE_THRES) {
+      cmdThrottle = MAX(brakeVal, ((cmdThrottle - ELECTRIC_BRAKE_THRES) * inputMax) / (inputMax - ELECTRIC_BRAKE_THRES));
     } else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
-      cmd2 = MIN(brakeVal, ((cmd2 + ELECTRIC_BRAKE_THRES) * inputMin) / (inputMin + ELECTRIC_BRAKE_THRES));
+      cmdThrottle = MIN(brakeVal, ((cmdThrottle + ELECTRIC_BRAKE_THRES) * inputMin) / (inputMin + ELECTRIC_BRAKE_THRES));
     }
 #endif
 }
@@ -431,8 +426,8 @@ void poweroffPressCheck(void) {
 void readInput(void) {
 
 	// throttle / brake commands
-	input1 = command.Brake << 2;
-	input2 = command.Throttle << 2;
+	inputBrake = command.Brake << 2;
+	inputThrottle = command.Throttle << 2;
 
 	// speed limiter
 	uint16_t speed_limit = command.Speed_limit;
@@ -467,17 +462,17 @@ void readCommand(void) {
 	}
 	timeoutFlagSerial = timeoutFlagSerial_R;
 
-	cmd1 = input1;
-	cmd2 = input2;
+	cmdBrake = inputBrake;
+	cmdThrottle = inputThrottle;
 
-	brakePressed = (uint8_t) (cmd1 > 50);
+	brakePressed = (uint8_t) (cmdBrake > 50);
 
 	if (timeoutFlagADC || timeoutFlagSerial || timeoutCnt > TIMEOUT) { // In case of timeout bring the system to a Safe State
 		// commented : not safe with escooters
 		//ctrlModReq = OPEN_MODE; // Request OPEN_MODE. This will bring the motor power to 0 in a controlled way
 
-		cmd1 = 0;
-		cmd2 = 0;
+		cmdBrake = 0;
+		cmdThrottle = 0;
 	} else {
 		// commented : not safe with escooters
 		//ctrlModReq = ctrlModReqRaw;                   // Follow the Mode request
@@ -586,8 +581,8 @@ void usart_send_from_esc_to_display() {
 	feedback.Type = 0x01;
 	feedback.ESC_Version_Maj = 0x00;
 	feedback.ESC_Version_Min = 0x01;
-	feedback.Throttle = cmd2 >> 2;
-	feedback.Brake = cmd1 >> 2;
+	feedback.Throttle = cmdThrottle >> 2;
+	feedback.Brake = cmdBrake >> 2;
 	feedback.Controller_Voltage_LSB = batVoltageMillivolts & 0xff;
 	feedback.Controller_Voltage_MSB = (batVoltageMillivolts >> 8) & 0xff;
 	feedback.Controller_Current_LSB = analog.curr_dc & 0xff;
@@ -722,12 +717,14 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y) {
 	*y = q0 + *y;
 }
 
-/* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL);
- * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
- * Outputs:      rty_speedL                            = int16_t
+
+
+/* mixerFcn(rtu_speed, &rty_speeL);
+ * Inputs:       rtu_speed,                   = fixdt(1,16,4)
+ * Outputs:      rty_speed                            = int16_t
  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
  */
-void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speed) {
+void mixerFcn(int16_t rtu_speed, int16_t *rty_speed) {
 	int16_t prodSpeed;
 	int32_t tmp;
 
@@ -738,4 +735,5 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speed) {
 	*rty_speed = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
 	*rty_speed = CLAMP(*rty_speed, inputMin, inputMax);
 }
+
 
