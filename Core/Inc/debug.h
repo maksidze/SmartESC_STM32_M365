@@ -7,6 +7,7 @@
 // BLDC loop
 #define BLDC_ENABLE_LOOP 		1
 #define BLDC_CURRENT_LIMIT      1
+#define BLDC_STORE_CURRENT_PH_A 0
 
 // main loop auto commands
 #define LOOP_INC	    		1000

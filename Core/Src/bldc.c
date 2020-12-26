@@ -78,7 +78,9 @@ static int offset_volt_c = 0;
 
 #define TEST_NB_SAMPLES 500
 
+#if BLDC_STORE_CURRENT_PH_A
 int32_t adb_buffer_storage_ph1[TEST_NB_SAMPLES];
+#endif
 
 uint8_T errCodeLeft;
 int16_T motSpeedLeft;
@@ -147,7 +149,9 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_b = analog.curr_b_cnt * A2BIT_CONV;
 	analog.curr_c = analog.curr_c_cnt * A2BIT_CONV;
 
+#if BLDC_STORE_CURRENT_PH_A
 	adb_buffer_storage_ph1[counter % TEST_NB_SAMPLES] = analog.curr_a;
+#endif
 
 	// compute DC current
 	static int32_t filter_buffer;
