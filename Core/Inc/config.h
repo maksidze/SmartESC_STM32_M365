@@ -136,6 +136,9 @@
 
 
 // ############################## DEFAULT SETTINGS ############################
+#define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+#define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+
 // Default settings will be applied at the end of this config file if not set before
 #define INACTIVITY_TIMEOUT        8       // Minutes of not driving until poweroff. it is not very precise.
 #define BEEPS_BACKWARD            1       // 0 or 1
@@ -149,8 +152,27 @@
 // Value of RATE is in fixdt(1,16,4): VAL_fixedPoint = VAL_floatingPoint * 2^4. In this case 480 = 30 * 2^4
 #define DEFAULT_RATE                480   // 30.0f [-] lower value == slower rate [0, 32767] = [0.0, 2047.9375]. Do NOT make rate negative (>32767)
 #define DEFAULT_FILTER              6553  // Default for FILTER 0.1f [-] lower value == softer filter [0, 65535] = [0.0 - 1.0].
-#define DEFAULT_SPEED_COEFFICIENT   16384 // Default for SPEED_COEFFICIENT 1.0f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case 16384 = 1.0 * 2^14
-#define DEFAULT_STEER_COEFFICIENT   8192  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
+#define SPEED_COEFFICIENT   		26214     // 1.0f = 16384 / 1.6f = 26214 / 2.0f = 32767
+#define STEER_COEFFICIENT   		1024  // Defualt for STEER_COEFFICIENT 0.5f [-] higher value == stronger. [0, 65535] = [-2.0 - 2.0]. In this case  8192 = 0.5 * 2^14. If you do not want any steering, set it to 0.
+
+// Extra functionality
+#define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
+// #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
+//#define ELECTRIC_BRAKE_ENABLE           // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
+//#define ELECTRIC_BRAKE_MAX    100       // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
+//#define ELECTRIC_BRAKE_THRES  10       // (0, 500) Threshold below at which the electric brake starts engaging.
+
+#define INPUT1_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+#define INPUT1_MIN          -50      // min ADC1-value while poti at minimum-position (0 - 4095)
+#define INPUT1_MID          0
+#define INPUT1_MAX          1000      // max ADC1-value while poti at maximum-position (0 - 4095)
+#define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+
+#define INPUT2_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
+#define INPUT2_MIN          0       // min ADC2-value while poti at minimum-position (0 - 4095)
+#define INPUT2_MID          0
+#define INPUT2_MAX          1000      // max ADC2-value while poti at maximum-position (0 - 4095)
+#define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
 // ######################### END OF DEFAULT SETTINGS ##########################
 
 
@@ -168,40 +190,6 @@
 
 // ######################### END OF CRUISE CONTROL SETTINGS ##########################
 
-
-
-// ############################ VARIANT_HOVERCAR SETTINGS ############################
-#define CONTROL_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-#define FEEDBACK_SERIAL_USART3     // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-#define ADC_PROTECT_TIMEOUT 100       // ADC Protection: number of wrong / missing input commands before safety state is taken
-#define ADC_PROTECT_THRESH  200       // ADC Protection threshold below/above the MIN/MAX ADC values
-
-#define INPUT1_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-#define INPUT1_MIN          0      // min ADC1-value while poti at minimum-position (0 - 4095)
-#define INPUT1_MID          0
-#define INPUT1_MAX          1000      // max ADC1-value while poti at maximum-position (0 - 4095)
-#define INPUT1_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-
-#define INPUT2_TYPE         1         // 0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
-#define INPUT2_MIN          0       // min ADC2-value while poti at minimum-position (0 - 4095)
-#define INPUT2_MID          0
-#define INPUT2_MAX          1000      // max ADC2-value while poti at maximum-position (0 - 4095)
-#define INPUT2_DEADBAND     0         // How much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
-
-#define SPEED_COEFFICIENT   26214     // 1.0f = 16384 / 1.6f = 26214 / 2.0f = 32767
-#define STEER_COEFFICIENT   0         // 0.0f
-// #define INVERT_R_DIRECTION            // Invert rotation of right motor
-// #define INVERT_L_DIRECTION            // Invert rotation of left motor
-#define FEEDBACK_SERIAL_USART3        // Rx <- Tx of right sensor board: to use photosensors as buttons. Comment-out if sideboard is not used!
-
-// Extra functionality
-#define CRUISE_CONTROL_SUPPORT        // [-] Flag to enable Cruise Control support. Activation/Deactivation is done by sideboard button or Brake pedal press.
-// #define STANDSTILL_HOLD_ENABLE          // [-] Flag to hold the position when standtill is reached. Only available and makes sense for VOLTAGE or TORQUE mode.
-#define ELECTRIC_BRAKE_ENABLE           // [-] Flag to enable electric brake and replace the motor "freewheel" with a constant braking when the input torque request is 0. Only available and makes sense for TORQUE mode.
-#define ELECTRIC_BRAKE_MAX    100       // (0, 500) Maximum electric brake to be applied when input torque request is 0 (pedal fully released).
-#define ELECTRIC_BRAKE_THRES  10       // (0, 500) Threshold below at which the electric brake starts engaging.
-
-// ######################## END OF VARIANT_HOVERCAR SETTINGS #########################
 
 
 

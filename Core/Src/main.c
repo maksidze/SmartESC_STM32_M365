@@ -131,7 +131,7 @@ extern int16_t curr_a_cnt_max;
 // Local variables
 //------------------------------------------------------------------------
 
-static int16_t speed;                // local variable for speed. -1000 to 1000
+static int16_t throttle;                // local variable for speed. -1000 to 1000
 static int16_t brake;              // local variable for steering. -1000 to 1000
 static int16_t brakeRateFixdt; // local fixed-point variable for steering rate limiter
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
@@ -297,12 +297,10 @@ int main(void) {
 		filtLowPass32(brakeRateFixdt >> 4, FILTER, &brakeFixdt);
 		filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
 		brake = (int16_t) (brakeFixdt >> 16);  // convert fixed-point to integer
-		speed = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
+		throttle = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
 
-		speed = speed - brake;
-
-		// ####### MIXER #######
-		mixerFcn(speed << 4,brake << 4, &speedMotor); // This function implements the equations above
+		// ####### MIXER for electric braking #######
+		mixerFcn(throttle << 4, brake << 4, &speedMotor); // This function implements the equations above
 
 		// ####### SET OUTPUTS (if the target change is less than +/- 100) #######
 		if (speedMotor > lastSpeedMotor - 100
@@ -341,7 +339,7 @@ int main(void) {
 	      beepCount(0, 10, 6);
 	    } else if (BAT_LVL2_ENABLE && batVoltage < BAT_LVL2) {                                            // 1 beep slow (medium pitch): Low bat 2
 	      beepCount(0, 10, 30);
-	    } else if (BEEPS_BACKWARD && ((speed < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) { // 1 beep fast (high pitch): Backward spinning motors
+	    } else if (BEEPS_BACKWARD && ((throttle < -50 && speedAvg < 0) || MultipleTapBrake.b_multipleTap)) { // 1 beep fast (high pitch): Backward spinning motors
 	      beepCount(0, 5, 1);
 	      backwardDrive = 1;
 	    } else {  // do not beep

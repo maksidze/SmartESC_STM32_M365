@@ -738,7 +738,7 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	prodSpeed = (int16_t) ((rtu_speed * (int16_t) SPEED_COEFFICIENT) >> 14);
 	prodSteer = (int16_t) ((rtu_steer * (int16_t) STEER_COEFFICIENT) >> 14);
 
-	tmp = prodSpeed + prodSteer;
+	tmp = prodSpeed - prodSteer;
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
 	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
 	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
