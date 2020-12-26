@@ -47,8 +47,8 @@ extern int16_t curr_a_cnt_max;
 // Global variables set here in util.c
 //------------------------------------------------------------------------
 
-int16_t cmdBrake;                          // normalized input value. -1000 to 1000
-int16_t cmdThrottle;                          // normalized input value. -1000 to 1000
+int16_t cmdBrake;                       // normalized input value. -1000 to 1000
+int16_t cmdThrottle;                    // normalized input value. -1000 to 1000
 int16_t inputBrake;                        // Non normalized input value
 int16_t inputThrottle;                        // Non normalized input value
 
@@ -300,25 +300,33 @@ void standstillHold(void) {
  */
 void electricBrake(uint16_t speedBlend) {
 #if defined(ELECTRIC_BRAKE_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ == TRQ_MODE)
-    int16_t brakeVal;
+	int16_t brakeVal;
 
-    // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving) 
-    if (speedAvg > 0) {
-      brakeVal = (int16_t)((-ELECTRIC_BRAKE_MAX * speedBlend) >> 15);
-    } else {
-      brakeVal = (int16_t)(( ELECTRIC_BRAKE_MAX * speedBlend) >> 15);          
-    }
+	// Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving)
+	if (speedAvg > 0) {
+		brakeVal = (int16_t) ((-ELECTRIC_BRAKE_MAX * speedBlend) >> 15);
+	} else {
+		brakeVal = (int16_t) (( ELECTRIC_BRAKE_MAX * speedBlend) >> 15);
+	}
 
-    // Calculate the new cmd2 with brake component included
-    if (cmdThrottle >= 0 && cmdThrottle < ELECTRIC_BRAKE_THRES) {
-      cmdThrottle = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (cmdThrottle >= -ELECTRIC_BRAKE_THRES && cmdThrottle < 0) {
-      cmdThrottle = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (cmdThrottle >= ELECTRIC_BRAKE_THRES) {
-      cmdThrottle = MAX(brakeVal, ((cmdThrottle - ELECTRIC_BRAKE_THRES) * inputMax) / (inputMax - ELECTRIC_BRAKE_THRES));
-    } else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
-      cmdThrottle = MIN(brakeVal, ((cmdThrottle + ELECTRIC_BRAKE_THRES) * inputMin) / (inputMin + ELECTRIC_BRAKE_THRES));
-    }
+	// Calculate the new cmd2 with brake component included
+	if (cmdThrottle >= 0 && cmdThrottle < ELECTRIC_BRAKE_THRES) {
+		cmdThrottle =
+				MAX(brakeVal,
+						((ELECTRIC_BRAKE_THRES - cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
+	} else if (cmdThrottle >= -ELECTRIC_BRAKE_THRES && cmdThrottle < 0) {
+		cmdThrottle =
+				MIN(brakeVal,
+						((ELECTRIC_BRAKE_THRES + cmdThrottle) * brakeVal) / ELECTRIC_BRAKE_THRES);
+	} else if (cmdThrottle >= ELECTRIC_BRAKE_THRES) {
+		cmdThrottle =
+				MAX(brakeVal,
+						((cmdThrottle - ELECTRIC_BRAKE_THRES) * inputMax) / (inputMax - ELECTRIC_BRAKE_THRES));
+	} else {  // when (cmd2 < -ELECTRIC_BRAKE_THRES)
+		cmdThrottle =
+				MIN(brakeVal,
+						((cmdThrottle + ELECTRIC_BRAKE_THRES) * inputMin) / (inputMin + ELECTRIC_BRAKE_THRES));
+	}
 #endif
 }
 
@@ -717,23 +725,21 @@ void rateLimiter16(int16_t u, int16_t rate, int16_t *y) {
 	*y = q0 + *y;
 }
 
-
-
-/* mixerFcn(rtu_speed, &rty_speeL);
- * Inputs:       rtu_speed,                   = fixdt(1,16,4)
- * Outputs:      rty_speed                            = int16_t
+/* mixerFcn(rtu_speed, rtu_steer, &rty_speedR, &rty_speedL);
+ * Inputs:       rtu_speed, rtu_steer                  = fixdt(1,16,4)
+ * Outputs:      rty_speedL                = int16_t
  * Parameters:   SPEED_COEFFICIENT, STEER_COEFFICIENT  = fixdt(0,16,14)
  */
-void mixerFcn(int16_t rtu_speed, int16_t *rty_speed) {
+void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	int16_t prodSpeed;
+	int16_t prodSteer;
 	int32_t tmp;
 
 	prodSpeed = (int16_t) ((rtu_speed * (int16_t) SPEED_COEFFICIENT) >> 14);
+	prodSteer = (int16_t) ((rtu_steer * (int16_t) STEER_COEFFICIENT) >> 14);
 
-	tmp = prodSpeed;
+	tmp = prodSpeed + prodSteer;
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
-	*rty_speed = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
-	*rty_speed = CLAMP(*rty_speed, inputMin, inputMax);
+	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
+	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
 }
-
-

@@ -299,8 +299,10 @@ int main(void) {
 		brake = (int16_t) (brakeFixdt >> 16);  // convert fixed-point to integer
 		speed = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
 
+		speed = speed - brake;
+
 		// ####### MIXER #######
-		mixerFcn(speed << 4, &speedMotor); // This function implements the equations above
+		mixerFcn(speed << 4,brake << 4, &speedMotor); // This function implements the equations above
 
 		// ####### SET OUTPUTS (if the target change is less than +/- 100) #######
 		if (speedMotor > lastSpeedMotor - 100
