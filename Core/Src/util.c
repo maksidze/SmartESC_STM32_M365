@@ -439,7 +439,7 @@ void readInput(void) {
 
 	// speed limiter
 	uint16_t speed_limit = command.Speed_limit;
-	if (command.Speed_limit > 0)
+	if (speed_limit > 0)
 		rtP_Left.n_max = (speed_limit * 5) << 4;
 
 	// WARNING -- NOT final usage -- test only
