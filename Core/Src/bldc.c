@@ -79,7 +79,9 @@ static int offset_volt_c = 0;
 #define TEST_NB_SAMPLES 500
 
 #if BLDC_STORE_CURRENT_PH_A
-int32_t adb_buffer_storage_ph1[TEST_NB_SAMPLES];
+int16_t adb_buffer_storage_phA[TEST_NB_SAMPLES];
+int16_t adb_buffer_storage_phB[TEST_NB_SAMPLES];
+uint16_t cpt = 0;
 #endif
 
 uint8_T errCodeLeft;
@@ -150,7 +152,11 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_c = analog.curr_c_cnt * A2BIT_CONV;
 
 #if BLDC_STORE_CURRENT_PH_A
-	adb_buffer_storage_ph1[counter % TEST_NB_SAMPLES] = analog.curr_a;
+	if (rtY_Motor.n_mot > 500 && cpt < TEST_NB_SAMPLES) {
+		adb_buffer_storage_phA[cpt] = analog.curr_a;
+		adb_buffer_storage_phB[cpt] = analog.curr_b;
+		cpt++;
+	}
 #endif
 
 	// compute DC current
@@ -241,7 +247,6 @@ void DMA1_Channel1_IRQHandler(void) {
 			pwm_res - pwm_margin);
 
 #endif
-
 
 #if DEBUG_LED == BLDC_DMA
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);

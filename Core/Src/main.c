@@ -754,7 +754,7 @@ static void MX_TIM2_Init(void)
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_2);
 
 	// offset reading adc vs phase status // 0 -> 2000
-	TIM2->CCR2 = 20;
+	TIM2->CCR2 = 500;
 	// compilation need 'optimize' in settings
 	// 0x00 = strange noise
 	// 0x05 = strange noise
