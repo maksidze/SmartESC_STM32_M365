@@ -488,7 +488,7 @@ static void MX_ADC1_Init(void) {
 	__HAL_ADC_ENABLE(&hadc1);
 
 	DMA1_Channel1->CCR = 0;
-	DMA1_Channel1->CNDTR = 4; // KX : 5 dans projet projet original
+	DMA1_Channel1->CNDTR = 4; // KX : 5 in original project - number of data in DMA channel
 	DMA1_Channel1->CPAR = (uint32_t) &(ADC1->DR);
 	DMA1_Channel1->CMAR = (uint32_t) &adc_buffer;
 	DMA1_Channel1->CCR = DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1 | DMA_CCR_MINC
