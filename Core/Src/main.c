@@ -754,11 +754,12 @@ static void MX_TIM2_Init(void)
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_2);
 
 	// offset reading adc vs phase status // 0 -> 2000
-	TIM2->CCR2 = 600;
-	// 450 : hard to stop himself in FOC + TORQUE
-	// 500 : slow speed after stop in FOC + TORQUE
-	// 550 : retart spining after stop in FOC + TORQUE
-	// 600 : all good !
+	TIM2->CCR2 = 20;
+	// compilation need 'optimize' in settings
+	// 0x00 = strange noise
+	// 0x05 = strange noise
+	// 0x10 = nice
+	// 0x10 = nicer
 
 
   /* USER CODE END TIM2_Init 2 */
