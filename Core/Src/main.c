@@ -474,7 +474,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Channel = ADC_CHANNEL_7;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -491,7 +491,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -555,7 +555,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
@@ -564,7 +564,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = ADC_REGULAR_RANK_3;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
@@ -572,7 +572,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
@@ -675,7 +675,7 @@ static void MX_TIM1_Init(void)
 
 	// Start counting >0 to effectively offset timers by the time it takes for one ADC conversion to complete.
 	// This method allows that the Phase currents ADC measurements are properly aligned with LOW-FET ON region for both motors
-	TIM1->CNT = 20;    // ADC_TOTAL_CONV_TIME / 2;
+	//TIM1->CNT = 20;    // ADC_TOTAL_CONV_TIME / 2;
 
 	htim1.Instance->RCR = 1;
 
@@ -752,6 +752,14 @@ static void MX_TIM2_Init(void)
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_1);
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_2);
+
+	// offset reading adc vs phase status // 0 -> 2000
+	TIM2->CCR2 = 600;
+	// 450 : hard to stop himself in FOC + TORQUE
+	// 500 : slow speed after stop in FOC + TORQUE
+	// 550 : retart spining after stop in FOC + TORQUE
+	// 600 : all good !
+
 
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
