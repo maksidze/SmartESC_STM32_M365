@@ -22,7 +22,7 @@
 #define UTIL_H
 
 #include <stdint.h>
-
+#include "stm32f1xx_hal.h"
 
 // Rx Structure USART
 typedef struct {
@@ -148,6 +148,8 @@ void usart_send_from_esc_to_display();
 void filtLowPass32(int32_t u, uint16_t coef, int32_t *y);
 void rateLimiter16(int16_t u, int16_t rate, int16_t *y);
 
+
+void OverclockADC(void);
 
 #endif
 

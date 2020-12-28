@@ -51,7 +51,7 @@ uint32_t counter = 0;
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
                                         /* official firmware value */
 #else
-static int16_t pwm_margin = 100; // Xiaomi firmware value
+static int16_t pwm_margin = 150; // Xiaomi firmware value
 #endif
 
 analog_t analog;
@@ -152,7 +152,7 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_c = analog.curr_c_cnt * A2BIT_CONV;
 
 #if BLDC_STORE_CURRENT_PH_A
-	if (rtY_Motor.n_mot > 500 && cpt < TEST_NB_SAMPLES) {
+	if (rtY_Motor.n_mot > 600 && cpt < TEST_NB_SAMPLES) {
 		adb_buffer_storage_phA[cpt] = analog.curr_a;
 		adb_buffer_storage_phB[cpt] = analog.curr_b;
 		cpt++;

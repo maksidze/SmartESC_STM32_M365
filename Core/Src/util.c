@@ -743,3 +743,18 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
 	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
 }
+
+/**
+ * @brief Overclock ADC to 16MHz
+ * @retval None
+ */
+void OverclockADC(void) {
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+	PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+		__disable_irq();
+		while (1) {
+		}
+	}
+}

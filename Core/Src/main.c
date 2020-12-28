@@ -154,6 +154,8 @@ int16_t board_temp_deg_c;
 
 /* USER CODE END 0 */
 
+
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -211,6 +213,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+
+  //OverclockADC();
 
 	BLDC_Init();        // BLDC Controller Init
 
@@ -754,7 +758,16 @@ static void MX_TIM2_Init(void)
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_2);
 
 	// offset reading adc vs phase status // 0 -> 2000
-	TIM2->CCR2 = 500;
+	//TIM2->CCR2 = 500;
+	TIM2->CCR2 = 600;
+
+	// OCLK test
+	// 600 :
+	// 575 : ko
+	// 550 : ko
+	// 500 : ko
+	// 450 : ko
+
 	// compilation need 'optimize' in settings
 	// 0x00 = strange noise
 	// 0x05 = strange noise
