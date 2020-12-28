@@ -55,31 +55,6 @@
 #define ARRAY_LEN(x) (uint32_t)(sizeof(x) / sizeof(*(x)))
 #define MAP(x, in_min, in_max, out_min, out_max) (((((x) - (in_min)) * ((out_max) - (out_min))) / ((in_max) - (in_min))) + (out_min))
 
-/*
-typedef struct {
-  uint16_t curr_a;
-  uint16_t curr_b;
-  uint16_t curr_c;
-  uint16_t volt_a;
-  uint16_t volt_b;
-  uint16_t volt_c;
-  uint16_t ntc;
-  uint16_t vbat;
-*/
-
-/*
-typedef struct {
-  uint16_t rlA;
-  uint16_t rlB;
-  uint16_t rlC;
-  uint16_t voltPhA;
-  uint16_t voltPhB;
-  uint16_t voltPhC;
-  uint16_t temp;
-  uint16_t batt1;
-} adc_buf_t;
-*/
-
 typedef struct {
  // XIAOMI firmware
   uint16_t curr_a;
@@ -87,8 +62,8 @@ typedef struct {
   uint16_t curr_c;
   uint16_t volt_a;
   uint16_t volt_b;
-  uint16_t temp;
   uint16_t volt_c;
+  uint16_t temp;
   uint16_t vbat;
 } adc_buf_t;
 
