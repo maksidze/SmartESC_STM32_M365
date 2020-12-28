@@ -106,8 +106,8 @@ extern ExtY rtY_Motor; /* External outputs */
 
 volatile adc_buf_t adc_buffer;
 
-extern int16_t cmdBrake;                    // normalized input value. -1000 to 1000
-extern int16_t cmdThrottle;                    // normalized input value. -1000 to 1000
+extern int16_t cmdBrake;                // normalized input value. -1000 to 1000
+extern int16_t cmdThrottle;             // normalized input value. -1000 to 1000
 extern int16_t inputBrake;                  // Non normalized input value
 extern int16_t inputThrottle;                  // Non normalized input value
 
@@ -133,7 +133,7 @@ extern int16_t curr_a_cnt_max;
 // Local variables
 //------------------------------------------------------------------------
 
-static int16_t throttle;                // local variable for speed. -1000 to 1000
+static int16_t throttle;              // local variable for speed. -1000 to 1000
 static int16_t brake;              // local variable for steering. -1000 to 1000
 static int16_t brakeRateFixdt; // local fixed-point variable for steering rate limiter
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
@@ -152,9 +152,13 @@ int32_t board_temp_adcFixdt; // Fixed-point filter output initialized with curre
 int16_t board_temp_adcFilt;
 int16_t board_temp_deg_c;
 
+#define ADC_OFFSET_READ 580
+uint32_t tim2_ccr2 = ADC_OFFSET_READ;
+uint32_t old_tim2_ccr2 = ADC_OFFSET_READ;
+
+uint16_t spinValue = 0;
+
 /* USER CODE END 0 */
-
-
 
 /**
   * @brief  The application entry point.
@@ -214,9 +218,9 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  //OverclockADC();
-
+	//OverclockADC();
 	BLDC_Init();        // BLDC Controller Init
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
 
 #if KX
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
@@ -246,6 +250,22 @@ int main(void)
 
 #if TEST_READ_UART_COMMANDS
 		readCommand();                        // Read Command: cmd1, cmd2
+#endif
+
+#if TEST_SHORT_SPIN
+#define INCREMENT 10
+		if (spinValue > 2000) {
+			cmdThrottle = 1000 - (spinValue - 2000);
+			spinValue = spinValue - INCREMENT;
+		}
+		else if (spinValue > 1000) {
+			cmdThrottle = 1000;
+			spinValue = spinValue - INCREMENT;
+		}
+		else if (spinValue > 0) {
+			cmdThrottle = spinValue;
+			spinValue = spinValue - INCREMENT;
+		}
 #endif
 
 #if TEST_AUTOSTART
@@ -293,7 +313,7 @@ int main(void)
 		electricBrake(speedBlend); // Apply Electric Brake. Only available and makes sense for TORQUE Mode
 #endif
 
-	    if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
+		if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
 			cmdBrake = (int16_t) ((cmdBrake * speedBlend) >> 15);
 		} else {
 			cmdBrake = (int16_t) ((-cmdBrake * speedBlend) >> 15);
@@ -305,7 +325,7 @@ int main(void)
 		filtLowPass32(brakeRateFixdt >> 4, FILTER, &brakeFixdt);
 		filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
 		brake = (int16_t) (brakeFixdt >> 16);  // convert fixed-point to integer
-		throttle = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
+		throttle = (int16_t) (speedFixdt >> 16); // convert fixed-point to integer
 
 		// ####### MIXER for electric braking #######
 		mixerFcn(throttle << 4, brake << 4, &speedMotor); // This function implements the equations above
@@ -370,6 +390,11 @@ int main(void)
 #if DEBUG_LED == MAIN_LOOP
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, main_loop_counter % 100 > 50);
 #endif
+
+		if (tim2_ccr2 != old_tim2_ccr2) {
+			TIM2->CCR2 = tim2_ccr2;
+			old_tim2_ccr2 = tim2_ccr2;
+		}
 
 		// Update main loop states
 		lastSpeedMotor = speedMotor;
@@ -672,10 +697,12 @@ static void MX_TIM1_Init(void)
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_4);
 
 	// Start counting >0 to effectively offset timers by the time it takes for one ADC conversion to complete.
 	// This method allows that the Phase currents ADC measurements are properly aligned with LOW-FET ON region for both motors
@@ -751,7 +778,6 @@ static void MX_TIM2_Init(void)
   }
   /* USER CODE BEGIN TIM2_Init 2 */
 
-
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_1);
@@ -759,7 +785,7 @@ static void MX_TIM2_Init(void)
 
 	// offset reading adc vs phase status // 0 -> 2000
 	//TIM2->CCR2 = 500;
-	TIM2->CCR2 = 600;
+	TIM2->CCR2 = tim2_ccr2;
 
 	// OCLK test
 	// 600 :
@@ -773,7 +799,6 @@ static void MX_TIM2_Init(void)
 	// 0x05 = strange noise
 	// 0x10 = nice
 	// 0x10 = nicer
-
 
   /* USER CODE END TIM2_Init 2 */
 

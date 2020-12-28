@@ -14,3 +14,4 @@
 #define TEST_AUTOSTART 			0
 #define TEST_LOOP 				0
 #define TEST_READ_UART_COMMANDS 1
+#define TEST_SHORT_SPIN         1
