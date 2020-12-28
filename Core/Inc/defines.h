@@ -85,11 +85,11 @@ typedef struct {
   uint16_t curr_a;
   uint16_t curr_b;
   uint16_t curr_c;
-  uint16_t vbat;
-  uint16_t temp;
   uint16_t volt_a;
   uint16_t volt_b;
+  uint16_t temp;
   uint16_t volt_c;
+  uint16_t vbat;
 } adc_buf_t;
 
 

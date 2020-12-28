@@ -150,7 +150,7 @@ void UART_DisableRxErrors(UART_HandleTypeDef *huart) {
 void calcAvgSpeed(void) {
 
 	// Calculate measured average speed. The minus sign (-) is because motors spin in opposite directions
-	speedAvg = rtY_Motor.n_mot * 2; // double because of the 32KHz freq
+	speedAvg = rtY_Motor.n_mot; // double because of the 32KHz freq
 
 	// Handle the case when SPEED_COEFFICIENT sign is negative (which is when most significant bit is 1)
 	if (SPEED_COEFFICIENT & (1 << 16)) {
@@ -440,7 +440,7 @@ void readInput(void) {
 	// speed limiter
 	uint16_t speed_limit = command.Speed_limit;
 	if (speed_limit > 0)
-		rtP_Left.n_max = (speed_limit * 5) << 4;
+		rtP_Left.n_max = (speed_limit * 10) << 4;
 
 	// WARNING -- NOT final usage -- test only
 	if (command.Ligth_power == 1)
@@ -583,7 +583,7 @@ void usart_send_from_esc_to_display() {
 
 	int16_t batVoltageMillivolts = (int16_t) (batVoltage
 			* BAT_CALIB_REAL_VOLTAGE / BAT_CALIB_ADC);
-	uint16_t rpm = rtY_Motor.n_mot * 2;
+	uint16_t rpm = rtY_Motor.n_mot;
 
 	feedback.Frame_start = (uint16_t) SERIAL_START_FRAME_ESC_TO_DISPLAY;
 	feedback.Type = 0x01;
@@ -742,4 +742,19 @@ void mixerFcn(int16_t rtu_speed, int16_t rtu_steer, int16_t *rty_speedL) {
 	tmp = CLAMP(tmp, -32768, 32767);  // Overflow protection
 	*rty_speedL = (int16_t) (tmp >> 4);       // Convert from fixed-point to int
 	*rty_speedL = CLAMP(*rty_speedL, inputMin, inputMax);
+}
+
+/**
+ * @brief Overclock ADC to 16MHz
+ * @retval None
+ */
+void OverclockADC(void) {
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+	PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+		__disable_irq();
+		while (1) {
+		}
+	}
 }

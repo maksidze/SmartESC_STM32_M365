@@ -1,0 +1,1 @@
+bin\openocd.exe -f stm32.cfg

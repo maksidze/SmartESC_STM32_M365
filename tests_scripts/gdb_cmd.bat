@@ -1,0 +1,1 @@
+gdb -ex "target remote localhost:3333"  C:\VSARM\Workspace\SmartESC\Debug\SmartESC.elf

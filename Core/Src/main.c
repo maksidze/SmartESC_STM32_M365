@@ -55,6 +55,7 @@ ADC_HandleTypeDef hadc2;
 DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
@@ -78,6 +79,7 @@ static void MX_TIM1_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -104,8 +106,8 @@ extern ExtY rtY_Motor; /* External outputs */
 
 volatile adc_buf_t adc_buffer;
 
-extern int16_t cmdBrake;                    // normalized input value. -1000 to 1000
-extern int16_t cmdThrottle;                    // normalized input value. -1000 to 1000
+extern int16_t cmdBrake;                // normalized input value. -1000 to 1000
+extern int16_t cmdThrottle;             // normalized input value. -1000 to 1000
 extern int16_t inputBrake;                  // Non normalized input value
 extern int16_t inputThrottle;                  // Non normalized input value
 
@@ -131,7 +133,7 @@ extern int16_t curr_a_cnt_max;
 // Local variables
 //------------------------------------------------------------------------
 
-static int16_t throttle;                // local variable for speed. -1000 to 1000
+static int16_t throttle;              // local variable for speed. -1000 to 1000
 static int16_t brake;              // local variable for steering. -1000 to 1000
 static int16_t brakeRateFixdt; // local fixed-point variable for steering rate limiter
 static int16_t speedRateFixdt; // local fixed-point variable for speed rate limiter
@@ -149,6 +151,12 @@ int16_t lastSpeedMotor = 0;
 int32_t board_temp_adcFixdt; // Fixed-point filter output initialized with current ADC converted to fixed-point
 int16_t board_temp_adcFilt;
 int16_t board_temp_deg_c;
+
+#define ADC_OFFSET_READ 580
+uint32_t tim2_ccr2 = ADC_OFFSET_READ;
+uint32_t old_tim2_ccr2 = ADC_OFFSET_READ;
+
+uint16_t spinValue = 0;
 
 /* USER CODE END 0 */
 
@@ -207,9 +215,12 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
+	//OverclockADC();
 	BLDC_Init();        // BLDC Controller Init
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
 
 #if KX
   HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_SET);   // Activate Latch
@@ -239,6 +250,22 @@ int main(void)
 
 #if TEST_READ_UART_COMMANDS
 		readCommand();                        // Read Command: cmd1, cmd2
+#endif
+
+#if TEST_SHORT_SPIN
+#define INCREMENT 10
+		if (spinValue > 2000) {
+			cmdThrottle = 1000 - (spinValue - 2000);
+			spinValue = spinValue - INCREMENT;
+		}
+		else if (spinValue > 1000) {
+			cmdThrottle = 1000;
+			spinValue = spinValue - INCREMENT;
+		}
+		else if (spinValue > 0) {
+			cmdThrottle = spinValue;
+			spinValue = spinValue - INCREMENT;
+		}
 #endif
 
 #if TEST_AUTOSTART
@@ -286,7 +313,7 @@ int main(void)
 		electricBrake(speedBlend); // Apply Electric Brake. Only available and makes sense for TORQUE Mode
 #endif
 
-	    if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
+		if (speedAvg > 0) { // Make sure the Brake pedal is opposite to the direction of motion AND it goes to 0 as we reach standstill (to avoid Reverse driving by Brake pedal)
 			cmdBrake = (int16_t) ((cmdBrake * speedBlend) >> 15);
 		} else {
 			cmdBrake = (int16_t) ((-cmdBrake * speedBlend) >> 15);
@@ -298,7 +325,7 @@ int main(void)
 		filtLowPass32(brakeRateFixdt >> 4, FILTER, &brakeFixdt);
 		filtLowPass32(speedRateFixdt >> 4, FILTER, &speedFixdt);
 		brake = (int16_t) (brakeFixdt >> 16);  // convert fixed-point to integer
-		throttle = (int16_t) (speedFixdt >> 16);  // convert fixed-point to integer
+		throttle = (int16_t) (speedFixdt >> 16); // convert fixed-point to integer
 
 		// ####### MIXER for electric braking #######
 		mixerFcn(throttle << 4, brake << 4, &speedMotor); // This function implements the equations above
@@ -363,6 +390,11 @@ int main(void)
 #if DEBUG_LED == MAIN_LOOP
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, main_loop_counter % 100 > 50);
 #endif
+
+		if (tim2_ccr2 != old_tim2_ccr2) {
+			TIM2->CCR2 = tim2_ccr2;
+			old_tim2_ccr2 = tim2_ccr2;
+		}
 
 		// Update main loop states
 		lastSpeedMotor = speedMotor;
@@ -446,7 +478,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_CC2;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 4;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -471,7 +503,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Channel = ADC_CHANNEL_7;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -488,7 +520,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -552,7 +584,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
@@ -561,7 +593,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = ADC_REGULAR_RANK_3;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
@@ -569,7 +601,7 @@ static void MX_ADC2_Init(void)
   }
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
@@ -665,14 +697,16 @@ static void MX_TIM1_Init(void)
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_4);
 
 	// Start counting >0 to effectively offset timers by the time it takes for one ADC conversion to complete.
 	// This method allows that the Phase currents ADC measurements are properly aligned with LOW-FET ON region for both motors
-	TIM1->CNT = 20;    // ADC_TOTAL_CONV_TIME / 2;
+	//TIM1->CNT = 20;    // ADC_TOTAL_CONV_TIME / 2;
 
 	htim1.Instance->RCR = 1;
 
@@ -680,6 +714,93 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
+  htim2.Init.Period = 2000;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_GATED;
+  sSlaveConfig.InputTrigger = TIM_TS_ITR0;
+  if (HAL_TIM_SlaveConfigSynchro(&htim2, &sSlaveConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC2REF;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIMEx_PWMN_Start(&htim2, TIM_CHANNEL_2);
+
+	// offset reading adc vs phase status // 0 -> 2000
+	//TIM2->CCR2 = 500;
+	TIM2->CCR2 = tim2_ccr2;
+
+	// OCLK test
+	// 600 :
+	// 575 : ko
+	// 550 : ko
+	// 500 : ko
+	// 450 : ko
+
+	// compilation need 'optimize' in settings
+	// 0x00 = strange noise
+	// 0x05 = strange noise
+	// 0x10 = nice
+	// 0x10 = nicer
+
+  /* USER CODE END TIM2_Init 2 */
 
 }
 
@@ -696,7 +817,6 @@ static void MX_TIM3_Init(void)
   /* USER CODE END TIM3_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   /* USER CODE BEGIN TIM3_Init 1 */
@@ -707,7 +827,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 64000000 / 2 / PWM_FREQ;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -717,13 +837,7 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_GATED;
-  sSlaveConfig.InputTrigger = TIM_TS_ITR0;
-  if (HAL_TIM_SlaveConfigSynchro(&htim3, &sSlaveConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC2REF;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
   {

@@ -51,11 +51,12 @@ uint32_t counter = 0;
 static int16_t pwm_margin = 110;        /* This margin allows to always have a window in the PWM signal for proper Phase currents measurement */
                                         /* official firmware value */
 #else
-static int16_t pwm_margin = 100; // Xiaomi firmware value
+static int16_t pwm_margin = 110; // Xiaomi firmware value
 #endif
 
 analog_t analog;
 
+extern int16_t speedAvgAbs;
 extern uint8_t ctrlModReq;
 int32_t curDC_max = I_DC_MAX * 1000; //(I_DC_MAX * A2BIT_CONV);
 
@@ -76,14 +77,20 @@ static int offset_volt_a = 0;
 static int offset_volt_b = 0;
 static int offset_volt_c = 0;
 
-#define TEST_NB_SAMPLES 500
+#define TEST_NB_SAMPLES 1000
 
 #if BLDC_STORE_CURRENT_PH_A
-int32_t adb_buffer_storage_ph1[TEST_NB_SAMPLES];
+int16_t adb_buffer_storage_phA[TEST_NB_SAMPLES];
+int16_t adb_buffer_storage_phB[TEST_NB_SAMPLES];
+int16_t adb_buffer_storage_phC[TEST_NB_SAMPLES];
+uint16_t cpt = 0;
+uint16_t captureSpeed = 1200;
 #endif
 
 uint8_T errCodeLeft;
 int16_T motSpeedLeft;
+
+uint32_t timeBegin, timeEnd, timeInDma;
 
 int16_t voltageTimer = 0;
 int16_t batVoltage = (400 * BAT_CELLS * BAT_CALIB_ADC) / BAT_CALIB_REAL_VOLTAGE;
@@ -124,6 +131,8 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	DMA1->IFCR = DMA_IFCR_CTCIF1;
 
+	timeBegin = HAL_GetTick();
+
 #if DEBUG_LED == BLDC_DMA
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
 #endif
@@ -150,7 +159,12 @@ void DMA1_Channel1_IRQHandler(void) {
 	analog.curr_c = analog.curr_c_cnt * A2BIT_CONV;
 
 #if BLDC_STORE_CURRENT_PH_A
-	adb_buffer_storage_ph1[counter % TEST_NB_SAMPLES] = analog.curr_a;
+	if (speedAvgAbs > captureSpeed && cpt < TEST_NB_SAMPLES) {
+		adb_buffer_storage_phA[cpt] = analog.curr_a;
+		adb_buffer_storage_phB[cpt] = analog.curr_b;
+		adb_buffer_storage_phC[cpt] = analog.curr_c;
+		cpt++;
+	}
 #endif
 
 	// compute DC current
@@ -195,6 +209,9 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	/* Check for overrun */
 	if (OverrunFlag) {
+#if DEBUG_LED == BLDC_DMA
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
+#endif
 		return;
 	}
 	OverrunFlag = true;
@@ -242,10 +259,12 @@ void DMA1_Channel1_IRQHandler(void) {
 
 #endif
 
-
 #if DEBUG_LED == BLDC_DMA
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
 #endif
+
+	timeEnd = HAL_GetTick();
+	timeInDma = timeEnd - timeBegin;
 
 	counter++;
 	/* Indicate task complete */

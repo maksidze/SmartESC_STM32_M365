@@ -10,3 +10,5 @@ MDK-ARM/*.uvguix.*
 build/
 /Debug/
 /Release/
+
+docs/~$600rpm_pha_phb.xlsx
