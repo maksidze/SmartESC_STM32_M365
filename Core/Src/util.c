@@ -25,6 +25,7 @@
 #include "config.h"
 #include "eeprom.h"
 #include "util.h"
+#include "main.h"
 #include "BLDC_controller.h"
 #include "rtwtypes.h"
 
@@ -353,77 +354,37 @@ void cruiseControl(uint8_t button) {
 /* =========================== Poweroff Functions =========================== */
 
 void poweroff(void) {
-#if KX
   enable = 0;
-  consoleLog("-- Motors disabled --\r\n");
-  buzzerCount = 0;  // prevent interraction with beep counter
-  buzzerPattern = 0;
-  for (int i = 0; i < 8; i++) {
-    buzzerFreq = (uint8_t)i;
-    HAL_Delay(100);
-  }
-  saveConfig();
-  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, GPIO_PIN_RESET);
-#endif
+  HAL_GPIO_WritePin(TPS_ENA_GPIO_Port, TPS_ENA_Pin, GPIO_PIN_RESET);
 	while (1) {
 	}
 }
 
 void poweroffPressCheck(void) {
-#if KX
-	#if !defined(VARIANT_HOVERBOARD) && !defined(VARIANT_TRANSPOTTER)
-    if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+    if(HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) {
       enable = 0;
       uint16_t cnt_press = 0;
-      while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+      while(HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) {
         HAL_Delay(10);
-        if (cnt_press++ == 5 * 100) { beepShort(5); }
+        cnt_press++;
       }
-      if (cnt_press >= 5 * 100) {                         // Check if press is more than 5 sec
+#if KX
+      if (cnt_press >= 2 * 100) {                         // Check if press is more than 5 sec
         HAL_Delay(1000);
-        if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {  // Double press: Adjust Max Current, Max Speed
-          while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-          beepLong(8);
+        if (HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) {  // Double press: Adjust Max Current, Max Speed
+          while(HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) { HAL_Delay(10); }
           updateCurSpdLim();
-          beepShort(5);
         } else {                                          // Long press: Calibrate ADC Limits
-          beepLong(16); 
           adcCalibLim();
-          beepShort(5);
         }
-      } else {                                            // Short press: power off
-        poweroff();
-      }
-    }
-  #elif defined(VARIANT_TRANSPOTTER)
-    if(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;
-      while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-      beepShort(5);
-      HAL_Delay(300);
-      if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-        while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) { HAL_Delay(10); }
-        beepLong(5);
-        HAL_Delay(350);
-        poweroff();
       } else {
-        setDistance += 0.25;
-        if (setDistance > 2.6) {
-          setDistance = 0.5;
-        }
-        beepShort(setDistance / 0.25);
-        saveValue = setDistance * 1000;
-        saveValue_valid = 1;
-      }
-    }
-  #else
-    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
-      enable = 0;                                             // disable motors
-      while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}    // wait until button is released
-      poweroff();                                             // release power-latch
-    }
-  #endif
 #endif
+    	  // Short press: power off
+        poweroff();
+#if KX
+      }
+#endif
+    }
 }
 
 /* =========================== Read Functions =========================== */
@@ -449,6 +410,9 @@ void readInput(void) {
 		ctrlModReq = SPD_MODE; // can use SPD_MODE or VLT_MODE
 	else
 		ctrlModReq = TRQ_MODE;
+
+	if (command.Power_ON == 0x01)
+		poweroff();
 
 	//TIM1->CNT = command.Lock * 20;
 

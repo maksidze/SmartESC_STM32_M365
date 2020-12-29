@@ -346,9 +346,10 @@ int main(void)
 			usart_send_from_esc_to_display();
 		}
 
-#if KX
 	    // ####### POWEROFF BY POWER-BUTTON #######
 	    poweroffPressCheck();
+
+#if KX
 	    // ####### BEEP AND EMERGENCY POWEROFF #######
 	    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && speedAvgAbs < 20) || (batVoltage < BAT_DEAD && speedAvgAbs < 20)) {  // poweroff before mainboard burns OR low bat 3
 	      poweroff();
