@@ -58,7 +58,7 @@ analog_t analog;
 
 extern int16_t speedAvgAbs;
 extern uint8_t ctrlModReq;
-int32_t curDC_max = I_DC_MAX * 1000; //(I_DC_MAX * A2BIT_CONV);
+int32_t curDC_max = I_DC_MAX * 340;
 
 volatile int pwm = 0;
 
@@ -175,7 +175,7 @@ void DMA1_Channel1_IRQHandler(void) {
 
 	// curr_dc in mA
 	analog.curr_dc_raw = (filter_buffer >> 16);
-	analog.curr_dc = analog.curr_dc_raw * A2BIT_CONV;
+	analog.curr_dc = analog.curr_dc_raw * A2BIT_CONV / 9;
 
 	// store max phase A current (raw data)
 	if (analog.curr_a_cnt > curr_a_cnt_max)
@@ -191,7 +191,7 @@ void DMA1_Channel1_IRQHandler(void) {
 #if BLDC_CURRENT_LIMIT
 	// Disable PWM when current limit is reached (current chopping)
 	// This is the Level 2 of current protection. The Level 1 should kick in first given by I_MOT_MAX
-	// curDC_max in A
+	// curDC_max 340 = 1A
 	// curL_DC in mA
 	if ((ABS(analog.curr_dc) > (curDC_max)) || enable == 0) {
 		TIM1->BDTR &= ~TIM_BDTR_MOE;

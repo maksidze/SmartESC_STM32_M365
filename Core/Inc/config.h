@@ -14,7 +14,8 @@
 #define DEAD_TIME              48     // PWM deadtime
 #define DELAY_IN_MAIN_LOOP      5     // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 #define TIMEOUT                20     // number of wrong / missing input commands before emergency off
-#define A2BIT_CONV             33     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
+#define A2BIT_CONV             19     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
+//96 RAW = 5A
 
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
@@ -121,8 +122,8 @@
 #define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 
 // Limitation settings
-#define I_MOT_MAX       6              // [A] Maximum single motor current limit
-#define I_DC_MAX        4              // [A] Maximum stage2 DC Link current limit for Commutation and Sinusoidal types (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
+#define I_MOT_MAX       50              // [A] Maximum single motor current limit
+#define I_DC_MAX        50              // [A] Maximum stage2 DC Link current limit for Commutation and Sinusoidal types (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
 #define N_MOT_MAX       2047            // [rpm] Maximum motor speed limit
 
 // Field Weakening / Phase Advance
