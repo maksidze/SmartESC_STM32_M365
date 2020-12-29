@@ -368,8 +368,8 @@ void poweroffPressCheck(void) {
         HAL_Delay(10);
         cnt_press++;
       }
-#if KX
       if (cnt_press >= 2 * 100) {                         // Check if press is more than 5 sec
+#if KX
         HAL_Delay(1000);
         if (HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) {  // Double press: Adjust Max Current, Max Speed
           while(HAL_GPIO_ReadPin(PWR_BTN_GPIO_Port, PWR_BTN_Pin)) { HAL_Delay(10); }
@@ -381,9 +381,7 @@ void poweroffPressCheck(void) {
 #endif
     	  // Short press: power off
         poweroff();
-#if KX
       }
-#endif
     }
 }
 
