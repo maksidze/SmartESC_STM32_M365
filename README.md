@@ -2,6 +2,10 @@
 
 ⚠️ **Warning : this is work in progress. I decline all responsability about using informations from this project** ⚠️
 
+To contribute and help this project :
+
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/pools/c/8ut4175ux4) 
+
 ![Logo](/img/smart_esc.png)
 
 This project is desgiend to replace the firmware inside Xiaomi M365 controller.
