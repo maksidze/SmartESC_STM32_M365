@@ -26,11 +26,11 @@ good copy exist only on 1.4 Rev have all good but probably not exist today
   - Rev 1.4 have 60v regulator (maximum absolute) can be use to 12S battery pack maximum safety 
   - Rev 2.1 have 90v regulator (maximum absolute, 84V real) can be use to 19S battery pack maximum safety 
   - Rev 3.0 is exactly the same with 2.1 but design is more stronger for current than 2.1 & 1.4
-- stock Voltage sending limited to 54v by divided bridge resistor, but 150v tolérant 
+- stock Voltage sending limited to 54v by divided bridge resistor, but 150v tolerant 
 - stock Current reading to ~ +/- 100A per negative phase*
 - stock Capacitor is 1000uf 63v in stock can be change for 100V
-- NEWS we find voltage régulator 100v for remplace the 90v régulator on the board
-  More détails here :
+- NEWS we find voltage regulator 100v for remplace the 90v regulator on the board
+  More details here :
   https://docs.google.com/spreadsheets/d/1jOdUUpbCZVHQc2-eIezrbkNFHuf14I3zOeL0la91yoo/edit?usp=sharing
 
 
